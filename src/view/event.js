@@ -1,35 +1,45 @@
-export const createEventTemplate = () => {
+import dayjs from 'dayjs';
+import {getDuration, humanizeDuration} from '../utils/common';
+
+const createOffersTemplate = (offers) => {
+  return `<ul class="event__selected-offers">
+    ${offers.map((offer) => `<li class="event__offer">
+    <span class="event__offer-title">${offer.title}</span>
+    &plus;&euro;&nbsp;
+    <span class="event__offer-price">${offer.price}</span>
+  </li>`).join('')}
+  </ul>`;
+};
+
+export const createEventTemplate = (point) => {
+  const {basePrice,
+    dateFrom,
+    dateTo,
+    destination,
+    offers,
+    type} = point;
+
+
   return `<li class="trip-events__item">
     <div class="event">
-      <time class="event__date" datetime="2019-03-19">MAR 19</time>
+      <time class="event__date" datetime="2019-03-19">${dayjs(dateFrom).format('MMM D')}</time>
       <div class="event__type">
-        <img class="event__type-icon" width="42" height="42" src="img/icons/sightseeing.png" alt="Event type icon">
+        <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
       </div>
-      <h3 class="event__title">Sightseeing Chamonix</h3>
+      <h3 class="event__title">${type} ${destination.name}</h3>
       <div class="event__schedule">
         <p class="event__time">
-          <time class="event__start-time" datetime="2019-03-19T11:20">14:20</time>
+          <time class="event__start-time" datetime="2019-03-19T11:20">${dayjs(dateFrom).format('H:mm')}</time>
           &mdash;
-          <time class="event__end-time" datetime="2019-03-19T13:00">13:00</time>
+          <time class="event__end-time" datetime="2019-03-19T13:00">${dayjs(dateTo).format('H:mm')}</time>
         </p>
-        <p class="event__duration">01H 20M</p>
+        <p class="event__duration">${humanizeDuration(getDuration(dateFrom, dateTo))}</p>
       </div>
       <p class="event__price">
-        &euro;&nbsp;<span class="event__price-value">50</span>
+        &euro;&nbsp;<span class="event__price-value">${basePrice}</span>
       </p>
       <h4 class="visually-hidden">Offers:</h4>
-      <ul class="event__selected-offers">
-        <li class="event__offer">
-          <span class="event__offer-title">Book tickets</span>
-          &plus;&euro;&nbsp;
-          <span class="event__offer-price">40</span>
-        </li>
-        <li class="event__offer">
-          <span class="event__offer-title">Lunch in city</span>
-          &plus;&euro;&nbsp;
-          <span class="event__offer-price">30</span>
-        </li>
-      </ul>
+      ${createOffersTemplate(offers.offers)}
       <button class="event__favorite-btn" type="button">
         <span class="visually-hidden">Add to favorite</span>
         <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
