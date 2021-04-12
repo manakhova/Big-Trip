@@ -5,11 +5,12 @@ import {createTripInfoCostTemplate} from './view/trip-info-cost';
 import {createFiltersTemplate} from './view/filters';
 import {createSortingTemplate} from './view/sorting';
 import {createEventListTemplate} from './view/event-list';
-import {createNewEventFormTemplate} from './view/new-event-form';
 import {createEventTemplate} from './view/event';
 import {createEventEditTemplate} from './view/event-edit';
+import {generatePoint} from './mock/point';
 
-const EVENT_COUNT = 3;
+const EVENT_COUNT = 15;
+const points = new Array(EVENT_COUNT).fill().map(generatePoint);
 
 const render = (container, template, place) => {
   container.insertAdjacentHTML(place, template);
@@ -41,10 +42,10 @@ render(tripEventsContainerElement, createSortingTemplate(), 'beforeend');
 //список событий с формой создания
 render(tripEventsContainerElement, createEventListTemplate(), 'beforeend');
 const eventListElement = tripEventsContainerElement.querySelector('.trip-events__list');
-render(eventListElement, createNewEventFormTemplate(), 'beforeend');
+// render(eventListElement, createEventEditTemplate(points[0]), 'beforeend');
 
-render(eventListElement, createEventEditTemplate(), 'beforeend');
-for (let i = 0; i < EVENT_COUNT; i++) {
-  render(eventListElement, createEventTemplate(), 'beforeend');
+render(eventListElement, createEventEditTemplate(points[0]), 'beforeend');
+for (let i = 1; i < EVENT_COUNT; i++) {
+  render(eventListElement, createEventTemplate(points[i]), 'beforeend');
 }
 
