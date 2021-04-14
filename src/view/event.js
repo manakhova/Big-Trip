@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import {getDuration, humanizeDuration} from '../utils/common';
+import {getDuration, humanizeDuration, createElement} from '../utils/common';
 
 const createOffersTemplate = (offers) => {
   return `<ul class="event__selected-offers">
@@ -11,7 +11,7 @@ const createOffersTemplate = (offers) => {
   </ul>`;
 };
 
-export const createEventTemplate = (point) => {
+const createEventTemplate = (point) => {
   const {basePrice,
     dateFrom,
     dateTo,
@@ -52,3 +52,27 @@ export const createEventTemplate = (point) => {
     </div>
   </li>`;
 };
+
+export default class Event {
+  constructor(event) {
+    this._event = event;
+
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createEventTemplate(this._event);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
