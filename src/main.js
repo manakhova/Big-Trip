@@ -1,51 +1,72 @@
-import {createSiteMenuTemplate} from './view/site-menu';
-import {createTripInfoContainerTemplate} from './view/trip-info-container';
-import {createTripInfoMainTemplate} from './view/trip-info-main';
-import {createTripInfoCostTemplate} from './view/trip-info-cost';
-import {createFiltersTemplate} from './view/filters';
-import {createSortingTemplate} from './view/sorting';
-import {createEventListTemplate} from './view/event-list';
-import {createEventTemplate} from './view/event';
-import {createEventEditTemplate} from './view/event-edit';
+import SiteMenuView from './view/site-menu';
+import TripInfoContainerView from './view/trip-info-container';
+import TripInfoMainView from './view/trip-info-main';
+import TripInfoCost from './view/trip-info-cost';
+import FilterView from './view/filters';
+import SortingView from './view/sorting';
+import EventListView from './view/event-list';
+import EventView from './view/event';
+import EventEditView from './view/event-edit';
 import {generatePoint} from './mock/point';
+import {render, RenderPosition} from './utils/common';
 
 const EVENT_COUNT = 15;
-const points = new Array(EVENT_COUNT).fill().map(generatePoint);
+const events = new Array(EVENT_COUNT).fill().map(generatePoint);
 
-const render = (container, template, place) => {
-  container.insertAdjacentHTML(place, template);
+const renderEvent = (eventListElement, event) => {
+  const eventComponent = new EventView(event);
+  const eventEditComponent = new EventEditView(event);
+
+  const replaceEventToForm = () => {
+    eventListElement.replaceChild(eventEditComponent.getElement(), eventComponent.getElement());
+  };
+
+  const replaceFormToEvent = () => {
+    eventListElement.replaceChild(eventComponent.getElement(), eventEditComponent.getElement());
+  };
+
+  eventComponent.getElement().querySelector('.event__rollup-btn').addEventListener('click', () => {
+    replaceEventToForm();
+  });
+
+  eventEditComponent.getElement().querySelector('.event--edit').addEventListener('submit', (evt) => {
+    evt.preventDefault();
+    replaceFormToEvent();
+  });
+
+
+  render(eventListElement, eventComponent.getElement(), RenderPosition.BEFOREEND);
 };
 
 //контейнер инфо о поездке
 const siteHeaderElement = document.querySelector('.page-header');
 const tripElement = siteHeaderElement.querySelector('.trip-main');
-render(tripElement, createTripInfoContainerTemplate(), 'afterbegin');
+render(tripElement, new TripInfoContainerView().getElement(), RenderPosition.AFTERBEGIN);
 
 //инфо и стоимость
 const tripInfoElement = tripElement.querySelector('.trip-info');
-render(tripInfoElement, createTripInfoMainTemplate(), 'beforeend');
-render(tripInfoElement, createTripInfoCostTemplate(), 'beforeend');
+render(tripInfoElement, new TripInfoMainView().getElement(), RenderPosition.BEFOREEND);
+render(tripInfoElement, new TripInfoCost().getElement(), RenderPosition.BEFOREEND);
 
 //меню
 const menuElement = siteHeaderElement.querySelector('.trip-controls__navigation');
-render(menuElement, createSiteMenuTemplate(), 'beforeend');
+render(menuElement, new SiteMenuView().getElement(), RenderPosition.BEFOREEND);
 
 //фильтры
 const filtersElement = siteHeaderElement.querySelector('.trip-controls__filters');
-render(filtersElement, createFiltersTemplate(), 'beforeend');
+render(filtersElement, new FilterView().getElement(), RenderPosition.BEFOREEND);
 
 //сортировка
 const siteMainElement = document.querySelector('.page-main');
 const tripEventsContainerElement = siteMainElement.querySelector('.trip-events');
-render(tripEventsContainerElement, createSortingTemplate(), 'beforeend');
+render(tripEventsContainerElement, new SortingView().getElement(), RenderPosition.BEFOREEND);
 
 //список событий с формой создания
-render(tripEventsContainerElement, createEventListTemplate(), 'beforeend');
-const eventListElement = tripEventsContainerElement.querySelector('.trip-events__list');
-// render(eventListElement, createEventEditTemplate(points[0]), 'beforeend');
+const eventListComponent = new EventListView();
+render(tripEventsContainerElement, eventListComponent.getElement(), RenderPosition.BEFOREEND);
 
-render(eventListElement, createEventEditTemplate(points[0]), 'beforeend');
-for (let i = 1; i < EVENT_COUNT; i++) {
-  render(eventListElement, createEventTemplate(points[i]), 'beforeend');
+// render(eventListComponent.getElement(), new EventEditView(points[0]).getElement(), RenderPosition.BEFOREEND);
+for (let i = 0; i < events.length; i++) {
+  renderEvent(eventListComponent.getElement(), events[i]);
 }
 

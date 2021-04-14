@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import {getTypeName} from '../utils/common';
+import {getTypeName, createElement} from '../utils/common';
 import {types, cities} from '../const';
 
 const createEventTypeTemplate = (types) => {
@@ -40,7 +40,7 @@ const createDestinationInfoTemplate = (destination) => {
   </section>`;
 };
 
-export const createEventEditTemplate = (point) => {
+const createEventEditTemplate = (point) => {
   const {basePrice,
     dateFrom,
     dateTo,
@@ -106,3 +106,27 @@ export const createEventEditTemplate = (point) => {
     </form>
   </li>`;
 };
+
+export default class EventEdit {
+  constructor(event) {
+    this._event = event;
+
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createEventEditTemplate(this._event);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
