@@ -7,36 +7,15 @@ import SortingView from './view/sorting';
 import EventListView from './view/event-list';
 import EventView from './view/event';
 import EventEditView from './view/event-edit';
+import NoEventView from './view/no-event';
 import {generatePoint} from './mock/point';
 import {render, RenderPosition} from './utils/common';
 
-const EVENT_COUNT = 15;
+const EVENT_COUNT = 12;
 const events = new Array(EVENT_COUNT).fill().map(generatePoint);
 
-const renderEvent = (eventListElement, event) => {
-  const eventComponent = new EventView(event);
-  const eventEditComponent = new EventEditView(event);
-
-  const replaceEventToForm = () => {
-    eventListElement.replaceChild(eventEditComponent.getElement(), eventComponent.getElement());
-  };
-
-  const replaceFormToEvent = () => {
-    eventListElement.replaceChild(eventComponent.getElement(), eventEditComponent.getElement());
-  };
-
-  eventComponent.getElement().querySelector('.event__rollup-btn').addEventListener('click', () => {
-    replaceEventToForm();
-  });
-
-  eventEditComponent.getElement().querySelector('.event--edit').addEventListener('submit', (evt) => {
-    evt.preventDefault();
-    replaceFormToEvent();
-  });
-
-
-  render(eventListElement, eventComponent.getElement(), RenderPosition.BEFOREEND);
-};
+const siteMainElement = document.querySelector('.page-main');
+const tripEventsContainerElement = siteMainElement.querySelector('.trip-events');
 
 //контейнер инфо о поездке
 const siteHeaderElement = document.querySelector('.page-header');
@@ -56,17 +35,61 @@ render(menuElement, new SiteMenuView().getElement(), RenderPosition.BEFOREEND);
 const filtersElement = siteHeaderElement.querySelector('.trip-controls__filters');
 render(filtersElement, new FilterView().getElement(), RenderPosition.BEFOREEND);
 
-//сортировка
-const siteMainElement = document.querySelector('.page-main');
-const tripEventsContainerElement = siteMainElement.querySelector('.trip-events');
-render(tripEventsContainerElement, new SortingView().getElement(), RenderPosition.BEFOREEND);
+const renderEvent = (eventListElement, event) => {
+  const eventComponent = new EventView(event);
+  const eventEditComponent = new EventEditView(event);
 
-//список событий с формой создания
-const eventListComponent = new EventListView();
-render(tripEventsContainerElement, eventListComponent.getElement(), RenderPosition.BEFOREEND);
+  const replaceEventToForm = () => {
+    eventListElement.replaceChild(eventEditComponent.getElement(), eventComponent.getElement());
+  };
 
-// render(eventListComponent.getElement(), new EventEditView(points[0]).getElement(), RenderPosition.BEFOREEND);
-for (let i = 0; i < events.length; i++) {
-  renderEvent(eventListComponent.getElement(), events[i]);
-}
+  const replaceFormToEvent = () => {
+    eventListElement.replaceChild(eventComponent.getElement(), eventEditComponent.getElement());
+  };
+
+  const onEscKeyDown = (evt) => {
+    if (evt.key === 'Escape' || evt.key === 'Esc') {
+      evt.preventDefault();
+      replaceFormToEvent();
+      document.removeEventListener('keydown', onEscKeyDown);
+    }
+  };
+
+  eventComponent.getElement().querySelector('.event__rollup-btn').addEventListener('click', () => {
+    replaceEventToForm();
+    document.addEventListener('keydown', onEscKeyDown);
+  });
+
+  eventEditComponent.getElement().querySelector('.event--edit').addEventListener('submit', (evt) => {
+    evt.preventDefault();
+    replaceFormToEvent();
+    document.removeEventListener('keydown', onEscKeyDown);
+  });
+
+  eventEditComponent.getElement().querySelector('.event__rollup-btn').addEventListener('click', () => {
+    replaceFormToEvent();
+    document.removeEventListener('keydown', onEscKeyDown);
+  });
+
+
+  render(eventListElement, eventComponent.getElement(), RenderPosition.BEFOREEND);
+};
+
+const renderEventList = (tripEventsContainerElement, events) => {
+  const eventListComponent = new EventListView();
+
+  render(tripEventsContainerElement, eventListComponent.getElement(), RenderPosition.BEFOREEND);
+
+  if (events.length !== 0) {
+    render(tripEventsContainerElement, new SortingView().getElement(), RenderPosition.AFTERBEGIN);
+  } else {
+    render(tripEventsContainerElement, new NoEventView().getElement(), RenderPosition.AFTERBEGIN);
+  }
+
+  events.forEach((event) => {
+    renderEvent(eventListComponent.getElement(), event);
+  });
+};
+
+renderEventList(tripEventsContainerElement, events);
 
