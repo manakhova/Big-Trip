@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
-import {getTypeName, createElement} from '../utils/common';
+import AbstractView from './abstract';
+import {getTypeName} from '../utils/event';
 import {types, cities} from '../const';
 
 const createEventTypeTemplate = (types) => {
@@ -107,26 +108,36 @@ const createEventEditTemplate = (point) => {
   </li>`;
 };
 
-export default class EventEdit {
+export default class EventEdit extends AbstractView{
   constructor(event) {
+    super();
     this._event = event;
 
-    this._element = null;
+    this._formSubmitHandler = this._formSubmitHandler.bind(this);
+    this._closeEditClickHandler = this._closeEditClickHandler.bind(this);
   }
 
   getTemplate() {
     return createEventEditTemplate(this._event);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
+  _formSubmitHandler(evt) {
+    evt.preventDefault();
+    this._callback.formSubmit();
   }
 
-  removeElement() {
-    this._element = null;
+  _closeEditClickHandler(evt) {
+    evt.preventDefault();
+    this._callback.closeEditClick();
+  }
+
+  setFormSubmitHandler(callback) {
+    this._callback.formSubmit = callback;
+    this.getElement().querySelector('.event--edit').addEventListener('submit', this._formSubmitHandler);
+  }
+
+  setCloseEditClickHandler(callback) {
+    this._callback.closeEditClick = callback;
+    this.getElement().querySelector('.event__rollup-btn').addEventListener('click', this._closeEditClickHandler);
   }
 }

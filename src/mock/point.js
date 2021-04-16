@@ -1,4 +1,5 @@
-import {getRandomInteger, shuffleArray, generateDate} from '../utils/common';
+import {getRandomInteger, shuffleArray} from '../utils/common';
+import {generateDate} from '../utils/event';
 import {types, cities} from '../const';
 import {nanoid} from 'nanoid';
 

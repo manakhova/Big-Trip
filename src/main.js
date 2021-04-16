@@ -9,7 +9,7 @@ import EventView from './view/event';
 import EventEditView from './view/event-edit';
 import NoEventView from './view/no-event';
 import {generatePoint} from './mock/point';
-import {render, RenderPosition} from './utils/common';
+import {render, RenderPosition, replace} from './utils/render.js';
 
 const EVENT_COUNT = 12;
 const events = new Array(EVENT_COUNT).fill().map(generatePoint);
@@ -20,31 +20,31 @@ const tripEventsContainerElement = siteMainElement.querySelector('.trip-events')
 //контейнер инфо о поездке
 const siteHeaderElement = document.querySelector('.page-header');
 const tripElement = siteHeaderElement.querySelector('.trip-main');
-render(tripElement, new TripInfoContainerView().getElement(), RenderPosition.AFTERBEGIN);
+render(tripElement, new TripInfoContainerView(), RenderPosition.AFTERBEGIN);
 
 //инфо и стоимость
 const tripInfoElement = tripElement.querySelector('.trip-info');
-render(tripInfoElement, new TripInfoMainView().getElement(), RenderPosition.BEFOREEND);
-render(tripInfoElement, new TripInfoCost().getElement(), RenderPosition.BEFOREEND);
+render(tripInfoElement, new TripInfoMainView(), RenderPosition.BEFOREEND);
+render(tripInfoElement, new TripInfoCost(), RenderPosition.BEFOREEND);
 
 //меню
 const menuElement = siteHeaderElement.querySelector('.trip-controls__navigation');
-render(menuElement, new SiteMenuView().getElement(), RenderPosition.BEFOREEND);
+render(menuElement, new SiteMenuView(), RenderPosition.BEFOREEND);
 
 //фильтры
 const filtersElement = siteHeaderElement.querySelector('.trip-controls__filters');
-render(filtersElement, new FilterView().getElement(), RenderPosition.BEFOREEND);
+render(filtersElement, new FilterView(), RenderPosition.BEFOREEND);
 
 const renderEvent = (eventListElement, event) => {
   const eventComponent = new EventView(event);
   const eventEditComponent = new EventEditView(event);
 
   const replaceEventToForm = () => {
-    eventListElement.replaceChild(eventEditComponent.getElement(), eventComponent.getElement());
+    replace(eventEditComponent, eventComponent);
   };
 
   const replaceFormToEvent = () => {
-    eventListElement.replaceChild(eventComponent.getElement(), eventEditComponent.getElement());
+    replace(eventComponent, eventEditComponent);
   };
 
   const onEscKeyDown = (evt) => {
@@ -55,35 +55,34 @@ const renderEvent = (eventListElement, event) => {
     }
   };
 
-  eventComponent.getElement().querySelector('.event__rollup-btn').addEventListener('click', () => {
+  eventComponent.setEditClickHandler(() => {
     replaceEventToForm();
     document.addEventListener('keydown', onEscKeyDown);
   });
 
-  eventEditComponent.getElement().querySelector('.event--edit').addEventListener('submit', (evt) => {
-    evt.preventDefault();
+  eventEditComponent.setFormSubmitHandler(() => {
     replaceFormToEvent();
     document.removeEventListener('keydown', onEscKeyDown);
   });
 
-  eventEditComponent.getElement().querySelector('.event__rollup-btn').addEventListener('click', () => {
+  eventEditComponent.setCloseEditClickHandler(() => {
     replaceFormToEvent();
     document.removeEventListener('keydown', onEscKeyDown);
   });
 
 
-  render(eventListElement, eventComponent.getElement(), RenderPosition.BEFOREEND);
+  render(eventListElement, eventComponent, RenderPosition.BEFOREEND);
 };
 
 const renderEventList = (tripEventsContainerElement, events) => {
   const eventListComponent = new EventListView();
 
-  render(tripEventsContainerElement, eventListComponent.getElement(), RenderPosition.BEFOREEND);
+  render(tripEventsContainerElement, eventListComponent, RenderPosition.BEFOREEND);
 
   if (events.length !== 0) {
-    render(tripEventsContainerElement, new SortingView().getElement(), RenderPosition.AFTERBEGIN);
+    render(tripEventsContainerElement, new SortingView(), RenderPosition.AFTERBEGIN);
   } else {
-    render(tripEventsContainerElement, new NoEventView().getElement(), RenderPosition.AFTERBEGIN);
+    render(tripEventsContainerElement, new NoEventView(), RenderPosition.AFTERBEGIN);
   }
 
   events.forEach((event) => {
