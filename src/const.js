@@ -17,3 +17,9 @@ export const cities = [
   'Paris',
   'Cologne',
 ];
+
+export const SortType = {
+  DEFAULT: 'default',
+  PRICE: 'price',
+  TIME: 'time',
+};
