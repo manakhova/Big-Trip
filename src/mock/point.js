@@ -68,23 +68,25 @@ const generateType = () => {
   return types[randomIndex];
 };
 
-const generateOffers = () => {
-  const randomQuantity = getRandomInteger(1, 5);
+const generateOffers = (eventType) => {
+  const randomQuantity = getRandomInteger(0, 5);
   return {
-    type: generateType(),
+    type: eventType,
     offers: new Array(randomQuantity).fill().map(generateOffer),
   };
 };
 
 export const generatePoint = () => {
+  const eventType = generateType();
+
   return {
     basePrice: getRandomInteger(0, 1000),
     dateFrom: generateDate(`2021-04-0${getRandomInteger(1, 9)}T0${getRandomInteger(1, 9)}:${getRandomInteger(10, 59)}:00.000Z`),
     dateTo: generateDate(`2021-04-10T${getRandomInteger(10, 23)}:${getRandomInteger(10, 59)}:00.000Z`),
     destination: generateDestination(),
     id: nanoid(),
-    offers: generateOffers(),
     isFavorite: Boolean(getRandomInteger(0, 1)),
-    type: generateType(),
+    type: eventType,
+    offers: generateOffers(eventType),
   };
 };
