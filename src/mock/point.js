@@ -35,19 +35,6 @@ const generatePictures = () => {
   return new Array(randomQuantity).fill().map(generatePicture);
 };
 
-const generateTitle = () => {
-  const titles = [
-    'Add luggage',
-    'Switch to comfort class',
-    'Add meal',
-    'Choose seats',
-    'Travel by train',
-  ];
-  const randomIndex = getRandomInteger(0, titles.length - 1);
-
-  return titles[randomIndex];
-};
-
 const generateDestination = () => {
   return {
     description: generateDescription(),
@@ -56,28 +43,42 @@ const generateDestination = () => {
   };
 };
 
-const generateOffer = () => {
-  return {
-    title: generateTitle(),
-    price: getRandomInteger(0, 50),
-  };
-};
-
 const generateType = () => {
   const randomIndex = getRandomInteger(0, types.length - 1);
   return types[randomIndex];
 };
 
-const generateOffers = (eventType) => {
-  const randomQuantity = getRandomInteger(0, 5);
+export const generateOffers = (eventType) => {
   return {
     type: eventType,
-    offers: new Array(randomQuantity).fill().map(generateOffer),
+    offers: [
+      {
+        title: 'Add luggage',
+        price: 10,
+      },
+      {
+        title: 'Switch to comfort class',
+        price: 10,
+      },
+      {
+        title: 'Add meal',
+        price: 10,
+      },
+      {
+        title: 'Choose seats',
+        price: 10,
+      },
+      {
+        title: 'Travel by train',
+        price: 10,
+      },
+    ],
   };
 };
 
 export const generatePoint = () => {
   const eventType = generateType();
+  const randomQuantity = getRandomInteger(0, 5);
 
   return {
     basePrice: getRandomInteger(0, 1000),
@@ -87,6 +88,6 @@ export const generatePoint = () => {
     id: nanoid(),
     isFavorite: Boolean(getRandomInteger(0, 1)),
     type: eventType,
-    offers: generateOffers(eventType),
+    offers: generateOffers(eventType).offers.slice(randomQuantity),
   };
 };

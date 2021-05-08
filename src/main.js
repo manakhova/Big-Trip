@@ -4,7 +4,7 @@ import TripInfoMainView from './view/trip-info-main';
 import TripInfoCost from './view/trip-info-cost';
 import FilterView from './view/filters';
 import TripPresenter from './presenter/trip';
-import {generatePoint} from './mock/point';
+import {generatePoint, generateOffers} from './mock/point';
 import {render, RenderPosition} from './utils/render.js';
 
 const EVENT_COUNT = 12;

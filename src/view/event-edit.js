@@ -3,6 +3,7 @@ import SmartView from './smart';
 import {getTypeName} from '../utils/event';
 import {shuffleArray} from '../utils/common';
 import {types, cities} from '../const';
+import {generateOffers} from '../mock/point';
 
 const createEventTypeTemplate = (types) => {
   return `${types.map((type) => `<div class="event__type-item">
@@ -17,16 +18,20 @@ const createDestinationCityTemplate = (cities) => {
   </datalist>`;
 };
 
-const createOffersTemplate = (offers, isOfferChecked) => {
+const getCheckedOffer = (typeOffer, offers) => {
+  return offers.some((item) => item.title === typeOffer.title);
+};
+
+const createOffersTemplate = (offers, typeOffers) => {
   return `<section class="event__section  event__section--offers">
   <h3 class="event__section-title  event__section-title--offers">Offers</h3>
   <div class="event__available-offers">
-  ${offers.map((offer, i) => `<div class="event__offer-selector">
-  <input class="event__offer-checkbox  visually-hidden" id="event-offer-${i}" type="checkbox" name="event-offer-luggage" ${isOfferChecked ? 'checked' : ''}>
+  ${typeOffers.map((typeOffer, i) => `<div class="event__offer-selector">
+  <input class="event__offer-checkbox  visually-hidden" id="event-offer-${i}" type="checkbox" name="event-offer-luggage" ${getCheckedOffer(typeOffer, offers) ? 'checked' : ''}>
     <label class="event__offer-label" for="event-offer-${i}">
-      <span class="event__offer-title">${offer.title}</span>
+      <span class="event__offer-title">${typeOffer.title}</span>
       &plus;&euro;&nbsp;
-      <span class="event__offer-price">${offer.price}</span>
+      <span class="event__offer-price">${typeOffer.price}</span>
     </label>
    </div>`).join('')}
   </div>
@@ -51,7 +56,7 @@ const createEventEditTemplate = (data) => {
     destination,
     offers,
     type,
-    isOfferChecked} = data;
+    typeOffers} = data;
 
 
   return `<li class="trip-events__item">
@@ -103,7 +108,7 @@ const createEventEditTemplate = (data) => {
         </button>
       </header>
       <section class="event__details">
-         ${offers.offers.length === 0 ? '' : createOffersTemplate(offers.offers, isOfferChecked)}
+         ${typeOffers.offers.length === 0 ? '' : createOffersTemplate(offers, typeOffers.offers)}
          ${destination === {} ? '' : createDestinationInfoTemplate(destination)}
       </section>
     </form>
@@ -119,6 +124,7 @@ export default class EventEdit extends SmartView{
     this._closeEditClickHandler = this._closeEditClickHandler.bind(this);
     this._typeChangeHandler = this._typeChangeHandler.bind(this);
     this._destinationChangeHandler = this._destinationChangeHandler.bind(this);
+    // this._checkedOfferChangeHandler = this._checkedOfferChangeHandler.bind(this);
     this._setInnerHandlers();
   }
 
@@ -127,7 +133,6 @@ export default class EventEdit extends SmartView{
       EventEdit.parseEventToData(event),
     );
   }
-
 
   getTemplate() {
     return createEventEditTemplate(EventEdit.parseEventToData(this._data));
@@ -151,10 +156,11 @@ export default class EventEdit extends SmartView{
 
     this.updateData({
       type: evt.target.value,
-      offers: {
+      typeOffers: {
         type: this.type,
-        offers: shuffleArray(this._data.offers.offers)},
-      // то тз нужно будет загружать офферы с сервера, пока перемешиваю какие есть
+        offers: shuffleArray(this._data.typeOffers.offers),
+      },
+      // перемешивает массив, но почему-то не перерисовывает блок с офферами
     });
   }
 
@@ -175,6 +181,23 @@ export default class EventEdit extends SmartView{
     }
   }
 
+  // тут будет обработчик для выбора оффера, пока не придумала до конца, какой он должен быть
+  // _checkedOfferChangeHandler(evt) {
+  //   evt.preventDefault();
+
+  //   if (evt.target.tagName !== 'INPUT') {
+  //     return;
+  //   }
+
+  //   if (evt.target.checked) {
+  //     this.updateData({
+  //       offers: {
+  //         offers: this._data.offers.offers.push(evt.target) ???
+  //       },
+  //     });
+  //   }
+  // }
+
   setFormSubmitHandler(callback) {
     this._callback.formSubmit = callback;
     this.getElement().querySelector('.event--edit').addEventListener('submit', this._formSubmitHandler);
@@ -188,6 +211,7 @@ export default class EventEdit extends SmartView{
   _setInnerHandlers() {
     this.getElement().querySelector('.event__type-group').addEventListener('change', this._typeChangeHandler);
     this.getElement().querySelector('.event__input').addEventListener('input', this._destinationChangeHandler);
+    // this.getElement().querySelector('.event__available-offers').addEventListener('change', this._checkedOfferChangeHandler);
   }
 
   static parseEventToData(event) {
@@ -195,12 +219,15 @@ export default class EventEdit extends SmartView{
       {},
       event,
       {
+        typeOffers: generateOffers(event.type),
       },
     );
   }
 
   static parseDataToTask(data) {
     data = Object.assign({}, data);
+
+    delete data.typeOffers;
 
     return data;
   }
