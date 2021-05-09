@@ -50,7 +50,7 @@ export default class Trip {
       case SortType.TIME:
         this._events.sort(sortEventByTime);
         break;
-      default:
+      case SortType.DEFAULT:
         this._events = this._sourcedEvents.slice();
     }
 

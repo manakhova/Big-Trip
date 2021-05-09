@@ -46,15 +46,12 @@ export default class Sorting extends AbstractView{
       return;
     }
 
-    evt.preventDefault();
     this._callback.sortTypeChange(evt.target.dataset.sortType);
   }
 
   setSortTypeChangeHandler(callback) {
     this._callback.sortTypeChange = callback;
     this.getElement().addEventListener('click', this._sortTypeChangeHandler);
-    // не понимаю, почему не работает на change. По идее, это же более логично для чекбокса.
-    // Но если сделать change, то визуально переключение сортировки изменяется, а список не перерисовывается
   }
 }
 
