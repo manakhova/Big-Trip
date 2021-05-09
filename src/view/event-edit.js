@@ -135,7 +135,7 @@ export default class EventEdit extends SmartView{
   }
 
   getTemplate() {
-    return createEventEditTemplate(EventEdit.parseEventToData(this._data));
+    return createEventEditTemplate(this._data);
   }
 
   _formSubmitHandler(evt) {
