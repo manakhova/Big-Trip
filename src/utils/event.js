@@ -7,14 +7,25 @@ export const generateDate = (date) => {
 };
 
 export const getDuration = (dateA, dateB) => {
-  return dateB - dateA;
+  return (dateB - dateA);
+};
+
+const formatDuration = (time) => {
+  return time <= 9 ? `0${time}` : `${time}`;
 };
 
 export const humanizeDuration = (time) => {
-  const hours = Math.floor(dayjs.duration(time, 'm').asHours());
-  const minutes = dayjs.duration((time - hours * 60), 'm').asMinutes();
+  const days = Math.floor(dayjs.duration(time).days());
+  const hours = Math.floor(dayjs.duration(time).hours());
+  const minutes = dayjs.duration((time)).minutes();
 
-  return `${hours}h ${minutes}m`;
+  if (days === 0 && hours === 0) {
+    return `${formatDuration(minutes)}m`;
+  } else if (days === 0 && hours !== 0) {
+    return `${formatDuration(hours)}h ${formatDuration(minutes)}m`;
+  } else {
+    return  `${formatDuration(days)}d ${formatDuration(hours)}h ${formatDuration(minutes)}m`;
+  }
 };
 
 export const getTypeName = (type) => {
@@ -53,4 +64,8 @@ export const sortEventByPrice = (filmA, filmB) => {
 
 export const sortEventByTime = (filmA, filmB) => {
   return getDuration(filmB.dateFrom, filmB.dateTo) - getDuration(filmA.dateFrom, filmA.dateTo);
+};
+
+export const formatDate = (date) => {
+  return dayjs(date).format('DD/MM/YY HH:mm');
 };

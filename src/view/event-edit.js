@@ -1,9 +1,11 @@
-import dayjs from 'dayjs';
 import SmartView from './smart';
-import {getTypeName} from '../utils/event';
+import {getTypeName, formatDate} from '../utils/event';
 import {shuffleArray} from '../utils/common';
 import {types, cities} from '../const';
 import {generateOffers} from '../mock/point';
+import flatpickr from 'flatpickr';
+
+import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 
 const createEventTypeTemplate = (types) => {
   return `${types.map((type) => `<div class="event__type-item">
@@ -87,10 +89,10 @@ const createEventEditTemplate = (data) => {
 
         <div class="event__field-group  event__field-group--time">
           <label class="visually-hidden" for="event-start-time-1">From</label>
-          <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${dayjs(dateFrom).format('DD/MM/YY HH:mm')}">
+          <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${formatDate(dateFrom)}">
           &mdash;
           <label class="visually-hidden" for="event-end-time-1">To</label>
-          <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${dayjs(dateTo).format('DD/MM/YY HH:mm')}">
+          <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${formatDate(dateTo)}">
         </div>
 
         <div class="event__field-group  event__field-group--price">
@@ -119,13 +121,18 @@ export default class EventEdit extends SmartView{
   constructor(event) {
     super();
     this._data = EventEdit.parseEventToData(event);
+    this._datepickerDateFrom = null;
+    this._datepickerDateTo = null;
 
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
     this._closeEditClickHandler = this._closeEditClickHandler.bind(this);
     this._typeChangeHandler = this._typeChangeHandler.bind(this);
     this._destinationChangeHandler = this._destinationChangeHandler.bind(this);
+    this._dateFromChangeHandler = this._dateFromChangeHandler.bind(this);
+    this._dateToChangeHandler = this._dateToChangeHandler.bind(this);
     // this._checkedOfferChangeHandler = this._checkedOfferChangeHandler.bind(this);
     this._setInnerHandlers();
+    this._setDatepicker();
   }
 
   reset(event) {
@@ -140,7 +147,11 @@ export default class EventEdit extends SmartView{
 
   _formSubmitHandler(evt) {
     evt.preventDefault();
-    this._callback.formSubmit(EventEdit.parseDataToTask(this._data));
+    if(this._data.dateTo < this._data.dateFrom) {
+      alert('Дата окончания события не может быть меньше даты начала');
+    } else {
+      this._callback.formSubmit(EventEdit.parseDataToTask(this._data));
+    }
   }
 
   _closeEditClickHandler(evt) {
@@ -160,7 +171,6 @@ export default class EventEdit extends SmartView{
         type: this.type,
         offers: shuffleArray(this._data.typeOffers.offers),
       },
-      // перемешивает массив, но почему-то не перерисовывает блок с офферами
     });
   }
 
@@ -197,6 +207,50 @@ export default class EventEdit extends SmartView{
   //     });
   //   }
   // }
+
+  _setDatepicker() {
+    if (this._datepickerDateFrom || this._datepickerDateTo) {
+      this._datepickerDateFrom.destroy();
+      this._datepickerDateTo.destroy();
+      this._datepickerDateFrom = null;
+      this._datepickerDateTo = null;
+    }
+
+    this._datepickerDateFrom = flatpickr(
+      this.getElement().querySelector('#event-start-time-1'),
+      {
+        dateFormat: 'd/m/y H:i',
+        defaultDate: this._data.dateFrom,
+        enableTime: true,
+        onChange: this._dateFromChangeHandler,
+      },
+    );
+
+    // почему-то при клике на инпут дата меняется на сегодняшнюю и только со второго клика открывается календарь
+
+    this._datepickerDateTo = flatpickr(
+      this.getElement().querySelector('#event-end-time-1'),
+      {
+        dateFormat: 'd/m/y H:i',
+        minDate: this._data.dateFrom,
+        defaultDate: this._data.dateTo,
+        enableTime: true,
+        onChange: this._dateToChangeHandler,
+      },
+    );
+  }
+
+  _dateFromChangeHandler([userDate]) {
+    this.updateData({
+      dateFrom: userDate,
+    });
+  }
+
+  _dateToChangeHandler([userDate]) {
+    this.updateData({
+      dateTo: userDate,
+    });
+  }
 
   setFormSubmitHandler(callback) {
     this._callback.formSubmit = callback;
@@ -236,5 +290,6 @@ export default class EventEdit extends SmartView{
     this._setInnerHandlers();
     this.setFormSubmitHandler(this._callback.formSubmit);
     this.setCloseEditClickHandler(this._callback.closeEditClick);
+    this._setDatepicker();
   }
 }
