@@ -220,20 +220,16 @@ export default class EventEdit extends SmartView{
       this.getElement().querySelector('#event-start-time-1'),
       {
         dateFormat: 'd/m/y H:i',
-        defaultDate: this._data.dateFrom,
         enableTime: true,
         onChange: this._dateFromChangeHandler,
       },
     );
-
-    // почему-то при клике на инпут дата меняется на сегодняшнюю и только со второго клика открывается календарь
 
     this._datepickerDateTo = flatpickr(
       this.getElement().querySelector('#event-end-time-1'),
       {
         dateFormat: 'd/m/y H:i',
         minDate: this._data.dateFrom,
-        defaultDate: this._data.dateTo,
         enableTime: true,
         onChange: this._dateToChangeHandler,
       },

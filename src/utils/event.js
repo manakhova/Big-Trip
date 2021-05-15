@@ -7,7 +7,7 @@ export const generateDate = (date) => {
 };
 
 export const getDuration = (dateA, dateB) => {
-  return (dateB - dateA);
+  return (generateDate(dateB) - generateDate(dateA));
 };
 
 const formatDuration = (time) => {
