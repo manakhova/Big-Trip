@@ -81,8 +81,8 @@ export const generatePoint = () => {
 
   return {
     basePrice: getRandomInteger(0, 1000),
-    dateFrom: `2021-04-10T${getRandomInteger(10, 23)}:${getRandomInteger(10, 59)}:00.000Z`,
-    dateTo: `2021-04-11T${getRandomInteger(10, 23)}:${getRandomInteger(10, 59)}:00.000Z`,
+    dateFrom: `2021-05-20T0${getRandomInteger(1, 9)}:${getRandomInteger(10, 59)}:00.000Z`,
+    dateTo: `2021-05-20T${getRandomInteger(10, 23)}:${getRandomInteger(10, 59)}:00.000Z`,
     destination: generateDestination(),
     id: nanoid(),
     isFavorite: Boolean(getRandomInteger(0, 1)),

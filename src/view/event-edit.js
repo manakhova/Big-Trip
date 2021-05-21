@@ -1,11 +1,29 @@
 import SmartView from './smart';
 import {getTypeName, formatDate} from '../utils/event';
 import {shuffleArray} from '../utils/common';
-import {types, cities} from '../const';
+import {types, cities, curretnDate} from '../const';
 import {generateOffers} from '../mock/point';
 import flatpickr from 'flatpickr';
 
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
+
+const BLANK_EVENT = {
+  basePrice: '',
+  dateFrom: curretnDate.toISOString(),
+  dateTo: curretnDate.toISOString(),
+  destination: {
+    name: '',
+    description: '',
+    pictures: [],
+  },
+  id: null,
+  isFavorite: false,
+  type: 'taxi',
+  offers: [],
+};
+
+// почему-то не срабатывает открытие новой задачи, если destination - пустой объект,
+// хотя в шаблоне эта возможность предусмотрена
 
 const createEventTypeTemplate = (types) => {
   return `${types.map((type) => `<div class="event__type-item">
@@ -83,7 +101,7 @@ const createEventEditTemplate = (data) => {
           <label class="event__label  event__type-output" for="event-destination-1">
             ${getTypeName(type)}
           </label>
-          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
+          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1" required>
           ${createDestinationCityTemplate(cities)}
         </div>
 
@@ -100,7 +118,7 @@ const createEventEditTemplate = (data) => {
             <span class="visually-hidden">Price</span>
             &euro;
           </label>
-          <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${basePrice}">
+          <input class="event__input  event__input--price" id="event-price-1" type="number" min="1" name="event-price" value="${basePrice}" required>
         </div>
 
         <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -118,7 +136,7 @@ const createEventEditTemplate = (data) => {
 };
 
 export default class EventEdit extends SmartView{
-  constructor(event) {
+  constructor(event = BLANK_EVENT) {
     super();
     this._data = EventEdit.parseEventToData(event);
     this._datepickerDateFrom = null;
@@ -128,11 +146,22 @@ export default class EventEdit extends SmartView{
     this._closeEditClickHandler = this._closeEditClickHandler.bind(this);
     this._typeChangeHandler = this._typeChangeHandler.bind(this);
     this._destinationChangeHandler = this._destinationChangeHandler.bind(this);
+    this._priceInputHandler = this._priceInputHandler.bind(this);
     this._dateFromChangeHandler = this._dateFromChangeHandler.bind(this);
     this._dateToChangeHandler = this._dateToChangeHandler.bind(this);
+    this._formDeleteClickHandler = this._formDeleteClickHandler.bind(this);
     // this._checkedOfferChangeHandler = this._checkedOfferChangeHandler.bind(this);
     this._setInnerHandlers();
     this._setDatepicker();
+  }
+
+  removeElement() {
+    super.removeElement();
+
+    if (this._datepicker) {
+      this._datepicker.destroy();
+      this._datepicker = null;
+    }
   }
 
   reset(event) {
@@ -150,7 +179,7 @@ export default class EventEdit extends SmartView{
     if(this._data.dateTo < this._data.dateFrom) {
       alert('Дата окончания события не может быть меньше даты начала');
     } else {
-      this._callback.formSubmit(EventEdit.parseDataToTask(this._data));
+      this._callback.formSubmit(EventEdit.parseDataToEvent(this._data));
     }
   }
 
@@ -188,7 +217,20 @@ export default class EventEdit extends SmartView{
           pictures: shuffleArray(this._data.destination.pictures),
         },
       });
+    } else {
+      evt.target.setCustomValidity('Выберите значение из списка');
     }
+  }
+
+  _priceInputHandler(evt) {
+    evt.preventDefault();
+    if (evt.target.tagName !== 'INPUT') {
+      return;
+    }
+
+    this.updateData({
+      basePrice: evt.target.value,
+    });
   }
 
   // тут будет обработчик для выбора оффера, пока не придумала до конца, какой он должен быть
@@ -207,6 +249,11 @@ export default class EventEdit extends SmartView{
   //     });
   //   }
   // }
+
+  _formDeleteClickHandler(evt) {
+    evt.preventDefault();
+    this._callback.deleteClick(EventEdit.parseDataToEvent(this._data));
+  }
 
   _setDatepicker() {
     if (this._datepickerDateFrom || this._datepickerDateTo) {
@@ -258,9 +305,15 @@ export default class EventEdit extends SmartView{
     this.getElement().querySelector('.event__rollup-btn').addEventListener('click', this._closeEditClickHandler);
   }
 
+  setDeleteClickHandler(callback) {
+    this._callback.deleteClick = callback;
+    this.getElement().querySelector('.event__reset-btn').addEventListener('click', this._formDeleteClickHandler);
+  }
+
   _setInnerHandlers() {
     this.getElement().querySelector('.event__type-group').addEventListener('change', this._typeChangeHandler);
-    this.getElement().querySelector('.event__input').addEventListener('input', this._destinationChangeHandler);
+    this.getElement().querySelector('.event__input--destination').addEventListener('input', this._destinationChangeHandler);
+    this.getElement().querySelector('.event__input--price').addEventListener('input', this._priceInputHandler);
     // this.getElement().querySelector('.event__available-offers').addEventListener('change', this._checkedOfferChangeHandler);
   }
 
@@ -274,7 +327,7 @@ export default class EventEdit extends SmartView{
     );
   }
 
-  static parseDataToTask(data) {
+  static parseDataToEvent(data) {
     data = Object.assign({}, data);
 
     delete data.typeOffers;
@@ -287,5 +340,6 @@ export default class EventEdit extends SmartView{
     this.setFormSubmitHandler(this._callback.formSubmit);
     this.setCloseEditClickHandler(this._callback.closeEditClick);
     this._setDatepicker();
+    this.setDeleteClickHandler(this._callback.deleteClick);
   }
 }
