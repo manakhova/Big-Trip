@@ -47,7 +47,7 @@ export default class Trip {
 
   _getEvents() {
     const filterType = this._filterModel.getFilter();
-    const events = this._eventsModel.getEvents();
+    const events = this._eventsModel.getEvents().sort(sortEventUp);
     const filtredEvents = filter[filterType](events);
 
     switch (this._currentSortType) {
@@ -57,10 +57,9 @@ export default class Trip {
       case SortType.TIME:
         filtredEvents.sort(sortEventByTime);
         break;
-      case SortType.DEFAULT:
-        filtredEvents.sort(sortEventUp);
     }
-    return filtredEvents.sort(sortEventUp);
+
+    return filtredEvents;
   }
 
   _handleModeChange() {

@@ -11,19 +11,12 @@ const BLANK_EVENT = {
   basePrice: '',
   dateFrom: curretnDate.toISOString(),
   dateTo: curretnDate.toISOString(),
-  destination: {
-    name: '',
-    description: '',
-    pictures: [],
-  },
+  destination: {},
   id: null,
   isFavorite: false,
   type: 'taxi',
   offers: [],
 };
-
-// почему-то не срабатывает открытие новой задачи, если destination - пустой объект,
-// хотя в шаблоне эта возможность предусмотрена
 
 const createEventTypeTemplate = (types) => {
   return `${types.map((type) => `<div class="event__type-item">
@@ -101,7 +94,7 @@ const createEventEditTemplate = (data) => {
           <label class="event__label  event__type-output" for="event-destination-1">
             ${getTypeName(type)}
           </label>
-          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1" required>
+          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name ? destination.name : ''}" list="destination-list-1" required>
           ${createDestinationCityTemplate(cities)}
         </div>
 
@@ -129,7 +122,7 @@ const createEventEditTemplate = (data) => {
       </header>
       <section class="event__details">
          ${typeOffers.offers.length === 0 ? '' : createOffersTemplate(offers, typeOffers.offers)}
-         ${destination === {} ? '' : createDestinationInfoTemplate(destination)}
+         ${destination.pictures ? createDestinationInfoTemplate(destination) : ''}
       </section>
     </form>
   </li>`;

@@ -1,7 +1,5 @@
 import SiteMenuView from './view/site-menu';
-import TripInfoContainerView from './view/trip-info-container';
-import TripInfoMainView from './view/trip-info-main';
-import TripInfoCost from './view/trip-info-cost';
+import TripInfoPresenter from './presenter/trip-info';
 import TripPresenter from './presenter/trip';
 import FilterPresenter from './presenter/filter.js';
 import {generatePoint} from './mock/point';
@@ -23,12 +21,8 @@ const tripEventsContainerElement = siteMainElement.querySelector('.trip-events')
 //контейнер инфо о поездке
 const siteHeaderElement = document.querySelector('.page-header');
 const tripElement = siteHeaderElement.querySelector('.trip-main');
-render(tripElement, new TripInfoContainerView(), RenderPosition.AFTERBEGIN);
-
-//инфо и стоимость
-const tripInfoElement = tripElement.querySelector('.trip-info');
-render(tripInfoElement, new TripInfoMainView(), RenderPosition.BEFOREEND);
-render(tripInfoElement, new TripInfoCost(), RenderPosition.BEFOREEND);
+const tripInfoPresenter = new TripInfoPresenter(tripElement, eventsModel);
+tripInfoPresenter.init();
 
 //меню
 const menuElement = siteHeaderElement.querySelector('.trip-controls__navigation');
