@@ -24,16 +24,16 @@ const createEventTemplate = (point) => {
 
   return `<li class="trip-events__item">
     <div class="event">
-      <time class="event__date" datetime="2019-03-19">${dayjs(dateFrom).format('MMM D')}</time>
+      <time class="event__date" datetime="${dateFrom}">${dayjs(dateFrom).format('MMM D')}</time>
       <div class="event__type">
         <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
       </div>
       <h3 class="event__title">${type} ${destination.name}</h3>
       <div class="event__schedule">
         <p class="event__time">
-          <time class="event__start-time" datetime="2019-03-19T11:20">${dayjs(dateFrom).format('H:mm')}</time>
+          <time class="event__start-time" datetime="${dateFrom}">${dayjs(dateFrom).format('H:mm')}</time>
           &mdash;
-          <time class="event__end-time" datetime="2019-03-19T13:00">${dayjs(dateTo).format('H:mm')}</time>
+          <time class="event__end-time" datetime="${dateFrom}">${dayjs(dateTo).format('H:mm')}</time>
         </p>
         <p class="event__duration">${humanizeDuration(getDuration(dateFrom, dateTo))}</p>
       </div>
