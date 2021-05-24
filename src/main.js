@@ -1,14 +1,18 @@
 import SiteMenuView from './view/site-menu';
+import StatsView from './view/stats';
 import TripInfoPresenter from './presenter/trip-info';
 import TripPresenter from './presenter/trip';
 import FilterPresenter from './presenter/filter.js';
 import {generatePoint} from './mock/point';
-import {render, RenderPosition} from './utils/render.js';
+import {render, RenderPosition, remove} from './utils/render.js';
 import EventsModel from './model/events';
 import FilterModel from './model/filter.js';
+import {MenuItem} from './const.js';
 
-const EVENT_COUNT = 12;
+const EVENT_COUNT = 10;
 const events = new Array(EVENT_COUNT).fill().map(generatePoint);
+
+let statsComponent = null;
 
 const eventsModel = new EventsModel();
 eventsModel.setEvents(events);
@@ -16,6 +20,7 @@ eventsModel.setEvents(events);
 const filterModel = new FilterModel();
 
 const siteMainElement = document.querySelector('.page-main');
+const statsContainer = siteMainElement.querySelector('.page-body__container');
 const tripEventsContainerElement = siteMainElement.querySelector('.trip-events');
 
 //контейнер инфо о поездке
@@ -26,7 +31,25 @@ tripInfoPresenter.init();
 
 //меню
 const menuElement = siteHeaderElement.querySelector('.trip-controls__navigation');
-render(menuElement, new SiteMenuView(), RenderPosition.BEFOREEND);
+const siteMenuComponent = new SiteMenuView();
+render(menuElement, siteMenuComponent, RenderPosition.BEFOREEND);
+
+
+const handleSiteMenuClick = (menuItem) => {
+  switch (menuItem) {
+    case MenuItem.TABLE:
+      remove(statsComponent);
+      tripPresenter.init();
+      break;
+    case MenuItem.STATS:
+      tripPresenter.destroy();
+      statsComponent = new StatsView(eventsModel.getEvents());
+      render(statsContainer, statsComponent, RenderPosition.BEFOREEND);
+      break;
+  }
+};
+
+siteMenuComponent.setMenuClickHandler(handleSiteMenuClick);
 
 //фильтры
 const filtersElement = siteHeaderElement.querySelector('.trip-controls__filters');
