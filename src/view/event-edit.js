@@ -94,7 +94,7 @@ const createEventEditTemplate = (data) => {
           <label class="event__label  event__type-output" for="event-destination-1">
             ${getTypeName(type)}
           </label>
-          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name ? destination.name : ''}" list="destination-list-1" required>
+          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name? destination.name : ''}" list="destination-list-1" required>
           ${createDestinationCityTemplate(cities)}
         </div>
 
@@ -198,16 +198,13 @@ export default class EventEdit extends SmartView{
 
   _destinationChangeHandler(evt) {
     evt.preventDefault();
-    if (evt.target.tagName !== 'INPUT') {
-      return;
-    }
 
     if (cities.some((city) => city === evt.target.value)) {
       this.updateData({
         destination: {
-          description: shuffleArray(this._data.destination.description),
+          //description: shuffleArray(this._data.destination.description),
           name: evt.target.value,
-          pictures: shuffleArray(this._data.destination.pictures),
+          // pictures: shuffleArray(this._data.destination.pictures),
         },
       });
     } else {
@@ -217,12 +214,9 @@ export default class EventEdit extends SmartView{
 
   _priceInputHandler(evt) {
     evt.preventDefault();
-    if (evt.target.tagName !== 'INPUT') {
-      return;
-    }
 
     this.updateData({
-      basePrice: evt.target.value,
+      basePrice: Number(evt.target.value),
     });
   }
 
@@ -305,7 +299,7 @@ export default class EventEdit extends SmartView{
 
   _setInnerHandlers() {
     this.getElement().querySelector('.event__type-group').addEventListener('change', this._typeChangeHandler);
-    this.getElement().querySelector('.event__input--destination').addEventListener('input', this._destinationChangeHandler);
+    this.getElement().querySelector('#event-destination-1').addEventListener('input', this._destinationChangeHandler);
     this.getElement().querySelector('.event__input--price').addEventListener('input', this._priceInputHandler);
     // this.getElement().querySelector('.event__available-offers').addEventListener('change', this._checkedOfferChangeHandler);
   }
