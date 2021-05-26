@@ -1,6 +1,7 @@
 import SortingView from '../view/sorting';
 import EventListView from '../view/event-list';
 import NoEventView from '../view/no-event';
+import LoadingView from '../view/loading';
 import EventPresenter from './event';
 import EventNewPresenter from './event-new';
 import {filter} from '../utils/filter';
@@ -16,11 +17,13 @@ export default class Trip {
     this._tripEventsContainer = tripEventsContainer;
     this._eventPresenter = {};
     this._currentSortType = SortType.DEFAULT;
+    this._isLoading = true;
 
     this._sortComponent = null;
 
     this._eventListComponent = new EventListView();
     this._noEventComponent = new NoEventView();
+    this._loadingComponent = new LoadingView();
 
     this._handleViewAction = this._handleViewAction.bind(this);
     this._handleModelEvent = this._handleModelEvent.bind(this);
@@ -105,6 +108,11 @@ export default class Trip {
         this._clearTrip({resetSortType: true});
         this._renderTrip();
         break;
+      case UpdateType.INIT:
+        this._isLoading = false;
+        remove(this._loadingComponent);
+        this._renderTrip();
+        break;
     }
   }
 
@@ -130,7 +138,7 @@ export default class Trip {
   }
 
   _renderEvent(event) {
-    const eventPresenter = new EventPresenter(this._eventListComponent, this._handleViewAction, this._handleModeChange);
+    const eventPresenter = new EventPresenter(this._eventListComponent, this._eventsModel, this._handleViewAction, this._handleModeChange);
     eventPresenter.init(event);
     this._eventPresenter[event.id] = eventPresenter;
   }
@@ -139,8 +147,12 @@ export default class Trip {
     events.forEach((event) => this._renderEvent(event));
   }
 
+  _renderLoading() {
+    render(this._tripEventsContainer, this._loadingComponent, RenderPosition.AFTERBEGIN);
+  }
+
   _renderNoEvents() {
-    render(this._tripEventsContainer, this._noEventComponent, RenderPosition.AFTERBEGIN);
+    render(this._tripEventsContainer, this._noEventComponent, RenderPosition.BEFOREEND);
   }
 
   _clearTrip({resetSortType = false} = {}) {
@@ -159,8 +171,14 @@ export default class Trip {
   }
 
   _renderTrip() {
+    if (this._isLoading) {
+      this._renderLoading();
+      return;
+    }
+
     const events = this._getEvents();
-    if (this._getEvents().length !== 0) {
+
+    if (events.length !== 0) {
       this._renderSort();
       this._renderEventList(events);
     } else {

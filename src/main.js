@@ -3,19 +3,20 @@ import StatsView from './view/stats';
 import TripInfoPresenter from './presenter/trip-info';
 import TripPresenter from './presenter/trip';
 import FilterPresenter from './presenter/filter.js';
-import {generatePoint} from './mock/point';
 import {render, RenderPosition, remove} from './utils/render.js';
 import EventsModel from './model/events';
 import FilterModel from './model/filter.js';
-import {MenuItem} from './const.js';
+import {MenuItem, UpdateType} from './const.js';
+import Api from './api.js';
 
-const EVENT_COUNT = 10;
-const events = new Array(EVENT_COUNT).fill().map(generatePoint);
+const AUTHORIZATION = 'Basic dkjwrbhiwgib77932bfiqr';
+const END_POINT = 'https://14.ecmascript.pages.academy/big-trip';
+
+const api = new Api(END_POINT, AUTHORIZATION);
 
 let statsComponent = null;
 
 const eventsModel = new EventsModel();
-eventsModel.setEvents(events);
 
 const filterModel = new FilterModel();
 
@@ -27,13 +28,10 @@ const tripEventsContainerElement = siteMainElement.querySelector('.trip-events')
 const siteHeaderElement = document.querySelector('.page-header');
 const tripElement = siteHeaderElement.querySelector('.trip-main');
 const tripInfoPresenter = new TripInfoPresenter(tripElement, eventsModel);
-tripInfoPresenter.init();
 
 //меню
 const menuElement = siteHeaderElement.querySelector('.trip-controls__navigation');
 const siteMenuComponent = new SiteMenuView();
-render(menuElement, siteMenuComponent, RenderPosition.BEFOREEND);
-
 
 const handleSiteMenuClick = (menuItem) => {
   switch (menuItem) {
@@ -49,7 +47,6 @@ const handleSiteMenuClick = (menuItem) => {
   }
 };
 
-siteMenuComponent.setMenuClickHandler(handleSiteMenuClick);
 
 //фильтры
 const filtersElement = siteHeaderElement.querySelector('.trip-controls__filters');
@@ -57,8 +54,32 @@ const filtersElement = siteHeaderElement.querySelector('.trip-controls__filters'
 const tripPresenter = new TripPresenter(tripEventsContainerElement, eventsModel, filterModel);
 const filterPresenter = new FilterPresenter(filtersElement, filterModel, eventsModel);
 
-filterPresenter.init();
 tripPresenter.init();
+
+api.getEvents()
+  .then((events) => {
+    eventsModel.setEvents(UpdateType.INIT, events);
+    render(menuElement, siteMenuComponent, RenderPosition.BEFOREEND);
+    siteMenuComponent.setMenuClickHandler(handleSiteMenuClick);
+    tripInfoPresenter.init();
+    filterPresenter.init();
+  })
+  .catch(() => {
+    eventsModel.setEvents(UpdateType.INIT, []);
+    render(menuElement, siteMenuComponent, RenderPosition.BEFOREEND);
+    siteMenuComponent.setMenuClickHandler(handleSiteMenuClick);
+    filterPresenter.destroy();
+  });
+
+api.getDestinations()
+  .then((destinations) => {
+    eventsModel.setDestinations(destinations);
+  });
+
+api.getOffers()
+  .then((offers) => {
+    eventsModel.setOffers(offers);
+  });
 
 document.querySelector('.trip-main__event-add-btn').addEventListener('click', (evt) => {
   evt.preventDefault();

@@ -2,7 +2,6 @@ import SmartView from './smart';
 import {getTypeName, formatDate} from '../utils/event';
 import {shuffleArray} from '../utils/common';
 import {types, cities, curretnDate} from '../const';
-import {generateOffers} from '../mock/point';
 import flatpickr from 'flatpickr';
 
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
@@ -62,15 +61,13 @@ const createDestinationInfoTemplate = (destination) => {
   </section>`;
 };
 
-const createEventEditTemplate = (data) => {
+const createEventEditTemplate = (data, typeOffers) => {
   const {basePrice,
     dateFrom,
     dateTo,
     destination,
     offers,
-    type,
-    typeOffers} = data;
-
+    type} = data;
 
   return `<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
@@ -121,7 +118,7 @@ const createEventEditTemplate = (data) => {
         </button>
       </header>
       <section class="event__details">
-         ${typeOffers.offers.length === 0 ? '' : createOffersTemplate(offers, typeOffers.offers)}
+         ${typeOffers.offers ? '' : createOffersTemplate(offers, typeOffers.offers)}
          ${destination.pictures ? createDestinationInfoTemplate(destination) : ''}
       </section>
     </form>
@@ -129,9 +126,21 @@ const createEventEditTemplate = (data) => {
 };
 
 export default class EventEdit extends SmartView{
-  constructor(event = BLANK_EVENT) {
+  constructor(event = BLANK_EVENT, eventsModel) {
     super();
     this._data = EventEdit.parseEventToData(event);
+
+    this._destinations = eventsModel.getDestinations();
+    this._offers = eventsModel.getOffers();
+    console.log(eventsModel.getEvents());
+
+    // проблема началась здесь, когда я стала в шаблон помещать офферы и направления (см getTemplate),
+    // взятые с сервера. Не понимаю, почему с ними перестается отрисовываться список точек, хотя
+    // с обычными точками маршрута(не форма редактирования) офферы и направления вообще не связаны. Точки загружаются, это
+    // можно увидеть в консоли
+
+    this._typeOffers = this._offers.filter((offer) => offer.type === this._data.type);
+
     this._datepickerDateFrom = null;
     this._datepickerDateTo = null;
 
@@ -164,7 +173,7 @@ export default class EventEdit extends SmartView{
   }
 
   getTemplate() {
-    return createEventEditTemplate(this._data);
+    return createEventEditTemplate(this._data, this._typeOffers);
   }
 
   _formSubmitHandler(evt) {
@@ -308,16 +317,14 @@ export default class EventEdit extends SmartView{
     return Object.assign(
       {},
       event,
-      {
-        typeOffers: generateOffers(event.type),
-      },
+      {},
     );
   }
 
   static parseDataToEvent(data) {
     data = Object.assign({}, data);
 
-    delete data.typeOffers;
+    //delete data.typeOffers;
 
     return data;
   }
