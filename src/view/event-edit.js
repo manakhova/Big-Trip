@@ -132,12 +132,12 @@ export default class EventEdit extends SmartView{
 
     this._destinations = eventsModel.getDestinations();
     this._offers = eventsModel.getOffers();
-    console.log(eventsModel.getEvents());
+    //console.log(eventsModel.getEvents());
 
     // проблема началась здесь, когда я стала в шаблон помещать офферы и направления (см getTemplate),
     // взятые с сервера. Не понимаю, почему с ними перестается отрисовываться список точек, хотя
     // с обычными точками маршрута(не форма редактирования) офферы и направления вообще не связаны. Точки загружаются, это
-    // можно увидеть в консоли
+    // можно увидеть в консоли, она выше закоммичена
 
     this._typeOffers = this._offers.filter((offer) => offer.type === this._data.type);
 
