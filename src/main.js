@@ -54,7 +54,7 @@ const handleSiteMenuClick = (menuItem) => {
 //фильтры
 const filtersElement = siteHeaderElement.querySelector('.trip-controls__filters');
 
-const tripPresenter = new TripPresenter(tripEventsContainerElement, eventsModel, filterModel);
+const tripPresenter = new TripPresenter(tripEventsContainerElement, eventsModel, filterModel, api);
 const filterPresenter = new FilterPresenter(filtersElement, filterModel, eventsModel);
 
 tripPresenter.init();

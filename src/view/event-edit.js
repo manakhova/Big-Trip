@@ -29,8 +29,16 @@ const createDestinationCityTemplate = (cities) => {
   </datalist>`;
 };
 
-const getCheckedOffer = (typeOffer, offers) => {
-  return offers.find((item) => item.title === typeOffer.title);
+const checkIsOfferChecked = (offer, typeOffers) => {
+  let isChecked = false;
+
+  typeOffers.forEach((typeOffer) => {
+    if (offer.title === typeOffer.title && offer.price === typeOffer.price) {
+      isChecked = true;
+    }
+  });
+
+  return isChecked;
 };
 
 const createOffersTemplate = (offers, typeOffers, loadedOffers) => {
@@ -39,7 +47,7 @@ const createOffersTemplate = (offers, typeOffers, loadedOffers) => {
   <h3 class="event__section-title  event__section-title--offers">Offers</h3>
   <div class="event__available-offers">
   ${typeOffers.map((typeOffer, i) => `<div class="event__offer-selector">
-  <input class="event__offer-checkbox visually-hidden" data-title="${typeOffer.title}" id="event-offer-${i}" type="checkbox" name="event-offer-luggage" ${getCheckedOffer(typeOffer, offers) ? 'checked' : ''}>
+  <input class="event__offer-checkbox visually-hidden" data-title="${typeOffer.title}" id="event-offer-${i}" type="checkbox" name="event-offer-luggage" ${checkIsOfferChecked(typeOffer, offers) ? 'checked' : ''}>
     <label class="event__offer-label" for="event-offer-${i}">
       <span class="event__offer-title">${typeOffer.title}</span>
       &plus;&euro;&nbsp;
@@ -53,7 +61,7 @@ const createOffersTemplate = (offers, typeOffers, loadedOffers) => {
   <h3 class="event__section-title  event__section-title--offers">Offers</h3>
   <div class="event__available-offers">
   ${loadedOffers.map((typeOffer, i) => `<div class="event__offer-selector">
-  <input class="event__offer-checkbox  visually-hidden" data-title="${typeOffer.title}" id="event-offer-${i}" type="checkbox" name="event-offer-luggage" ${getCheckedOffer(typeOffer, offers) ? 'checked' : ''}>
+  <input class="event__offer-checkbox  visually-hidden" data-title="${typeOffer.title}" id="event-offer-${i}" type="checkbox" name="event-offer-luggage" ${checkIsOfferChecked(typeOffer, offers) ? 'checked' : ''}>
     <label class="event__offer-label" for="event-offer-${i}">
       <span class="event__offer-title">${typeOffer.title}</span>
       &plus;&euro;&nbsp;
@@ -241,7 +249,13 @@ export default class EventEdit extends SmartView{
   _checkedOfferChangeHandler(evt) {
     evt.preventDefault();
 
-    const newAddedOffer = this._data.typeOffers.offers.find((offer) => offer.title === evt.target.dataset.title);
+    const getNewAddedOffer = () => {
+      if (this._data.typeOffers.length === 0) {
+        return this._typeOffers.offers.find((offer) => offer.title === evt.target.dataset.title);
+      } else {
+        return this._data.typeOffers.offers.find((offer) => offer.title === evt.target.dataset.title);
+      }
+    };
 
     if (evt.target.tagName !== 'INPUT') {
       return;
@@ -249,11 +263,11 @@ export default class EventEdit extends SmartView{
 
     if (evt.target.checked) {
       this.updateData({
-        offers: this._data.offers.push(newAddedOffer),
+        offers: [...this._data.offers, getNewAddedOffer()],
       });
     } else {
       this.updateData({
-        offers: this._data.offers.filter((offer) => offer.title !== newAddedOffer.title),
+        offers: this._data.offers.filter((offer) => offer.title !== getNewAddedOffer().title),
       });
     }
   }
@@ -322,9 +336,9 @@ export default class EventEdit extends SmartView{
     this.getElement().querySelector('.event__type-group').addEventListener('change', this._typeChangeHandler);
     this.getElement().querySelector('#event-destination-1').addEventListener('input', this._destinationChangeHandler);
     this.getElement().querySelector('.event__input--price').addEventListener('input', this._priceInputHandler);
-    (document.querySelector('.event__available-offers') === null ? null :
-      this.getElement().querySelector('.event__available-offers').addEventListener('change', this._checkedOfferChangeHandler));
-
+    if (this.getElement().querySelector('.event__available-offers')) {
+      this.getElement().querySelector('.event__available-offers').addEventListener('change', this._checkedOfferChangeHandler);
+    }
   }
 
 
