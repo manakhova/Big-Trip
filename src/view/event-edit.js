@@ -30,7 +30,7 @@ const createDestinationCityTemplate = (cities) => {
 };
 
 const getCheckedOffer = (typeOffer, offers) => {
-  return offers.some((item) => item.title === typeOffer.title);
+  return offers.find((item) => item.title === typeOffer.title);
 };
 
 const createOffersTemplate = (offers, typeOffers, loadedOffers) => {
@@ -39,7 +39,7 @@ const createOffersTemplate = (offers, typeOffers, loadedOffers) => {
   <h3 class="event__section-title  event__section-title--offers">Offers</h3>
   <div class="event__available-offers">
   ${typeOffers.map((typeOffer, i) => `<div class="event__offer-selector">
-  <input class="event__offer-checkbox  visually-hidden" id="event-offer-${i}" type="checkbox" name="event-offer-luggage" ${getCheckedOffer(typeOffer, offers) ? 'checked' : ''}>
+  <input class="event__offer-checkbox visually-hidden" data-title="${typeOffer.title}" id="event-offer-${i}" type="checkbox" name="event-offer-luggage" ${getCheckedOffer(typeOffer, offers) ? 'checked' : ''}>
     <label class="event__offer-label" for="event-offer-${i}">
       <span class="event__offer-title">${typeOffer.title}</span>
       &plus;&euro;&nbsp;
@@ -53,7 +53,7 @@ const createOffersTemplate = (offers, typeOffers, loadedOffers) => {
   <h3 class="event__section-title  event__section-title--offers">Offers</h3>
   <div class="event__available-offers">
   ${loadedOffers.map((typeOffer, i) => `<div class="event__offer-selector">
-  <input class="event__offer-checkbox  visually-hidden" id="event-offer-${i}" type="checkbox" name="event-offer-luggage" ${getCheckedOffer(typeOffer, offers) ? 'checked' : ''}>
+  <input class="event__offer-checkbox  visually-hidden" data-title="${typeOffer.title}" id="event-offer-${i}" type="checkbox" name="event-offer-luggage" ${getCheckedOffer(typeOffer, offers) ? 'checked' : ''}>
     <label class="event__offer-label" for="event-offer-${i}">
       <span class="event__offer-title">${typeOffer.title}</span>
       &plus;&euro;&nbsp;
@@ -134,7 +134,7 @@ const createEventEditTemplate = (data, cities, loadedOffers) => {
         </button>
       </header>
       <section class="event__details">
-         ${(loadedOffers.offers.length === 0) ? '' : createOffersTemplate(offers, typeOffers.offers, loadedOffers.offers)}
+         ${(loadedOffers.offers.length === 0 || (typeOffers.offers && typeOffers.offers.length === 0)) ? '' : createOffersTemplate(offers, typeOffers.offers, loadedOffers.offers)}
          ${destination.pictures ? createDestinationInfoTemplate(destination) : ''}
       </section>
     </form>
@@ -214,6 +214,7 @@ export default class EventEdit extends SmartView{
     this.updateData({
       type: evt.target.value,
       typeOffers: this._offers.find((offer) => offer.type === evt.target.value),
+      offers: [],
     });
   }
 
@@ -240,8 +241,20 @@ export default class EventEdit extends SmartView{
   _checkedOfferChangeHandler(evt) {
     evt.preventDefault();
 
+    const newAddedOffer = this._data.typeOffers.offers.find((offer) => offer.title === evt.target.dataset.title);
+
     if (evt.target.tagName !== 'INPUT') {
       return;
+    }
+
+    if (evt.target.checked) {
+      this.updateData({
+        offers: this._data.offers.push(newAddedOffer),
+      });
+    } else {
+      this.updateData({
+        offers: this._data.offers.filter((offer) => offer.title !== newAddedOffer.title),
+      });
     }
   }
 
@@ -307,8 +320,7 @@ export default class EventEdit extends SmartView{
 
   _setInnerHandlers() {
     this.getElement().querySelector('.event__type-group').addEventListener('change', this._typeChangeHandler);
-    (document.querySelector('#event-destination-1') === null ? null :
-      this.getElement().querySelector('#event-destination-1').addEventListener('input', this._destinationChangeHandler));
+    this.getElement().querySelector('#event-destination-1').addEventListener('input', this._destinationChangeHandler);
     this.getElement().querySelector('.event__input--price').addEventListener('input', this._priceInputHandler);
     (document.querySelector('.event__available-offers') === null ? null :
       this.getElement().querySelector('.event__available-offers').addEventListener('change', this._checkedOfferChangeHandler));

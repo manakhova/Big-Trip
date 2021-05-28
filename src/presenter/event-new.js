@@ -21,7 +21,7 @@ export default class EventNew {
     if (this._eventEditComponent !== null) {
       return;
     }
-    this._eventEditComponent = new EventEditView(this._eventsModel);
+    this._eventEditComponent = new EventEditView(undefined, this._eventsModel);
 
     const addNewEventButton = document.querySelector('.trip-main__event-add-btn');
     addNewEventButton.disabled = true;
@@ -33,7 +33,6 @@ export default class EventNew {
     render(this._eventListContainer, this._eventEditComponent, RenderPosition.AFTERBEGIN);
 
     document.addEventListener('keydown', this._escKeyDownHandler);
-    this._eventsModel.addObserver(this._handleModelEvent);
   }
 
   destroy() {
@@ -45,6 +44,9 @@ export default class EventNew {
     this._eventEditComponent = null;
 
     document.removeEventListener('keydown', this._escKeyDownHandler);
+
+    const addNewEventButton = document.querySelector('.trip-main__event-add-btn');
+    addNewEventButton.disabled = false;
   }
 
   _escKeyDownHandler(evt) {
