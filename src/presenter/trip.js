@@ -30,7 +30,7 @@ export default class Trip {
     this._handleModeChange = this._handleModeChange.bind(this);
     this._handleSortTypeChange = this._handleSortTypeChange.bind(this);
 
-    this._eventNewPresenter = new EventNewPresenter(this._eventListComponent, this._handleViewAction);
+    this._eventNewPresenter = new EventNewPresenter(this._eventListComponent, this._eventsModel, this._handleViewAction);
   }
 
   init() {
@@ -183,6 +183,7 @@ export default class Trip {
       this._renderEventList(events);
     } else {
       this._renderNoEvents();
+      remove(this._sortComponent);
     }
   }
 }

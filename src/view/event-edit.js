@@ -1,7 +1,6 @@
 import SmartView from './smart';
 import {getTypeName, formatDate} from '../utils/event';
-import {shuffleArray} from '../utils/common';
-import {types, cities, curretnDate} from '../const';
+import {types, curretnDate} from '../const';
 import flatpickr from 'flatpickr';
 
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
@@ -34,8 +33,9 @@ const getCheckedOffer = (typeOffer, offers) => {
   return offers.some((item) => item.title === typeOffer.title);
 };
 
-const createOffersTemplate = (offers, typeOffers) => {
-  return `<section class="event__section  event__section--offers">
+const createOffersTemplate = (offers, typeOffers, loadedOffers) => {
+  if (typeOffers) {
+    return `<section class="event__section  event__section--offers">
   <h3 class="event__section-title  event__section-title--offers">Offers</h3>
   <div class="event__available-offers">
   ${typeOffers.map((typeOffer, i) => `<div class="event__offer-selector">
@@ -48,6 +48,21 @@ const createOffersTemplate = (offers, typeOffers) => {
    </div>`).join('')}
   </div>
   </section>`;
+  } else {
+    return `<section class="event__section  event__section--offers">
+  <h3 class="event__section-title  event__section-title--offers">Offers</h3>
+  <div class="event__available-offers">
+  ${loadedOffers.map((typeOffer, i) => `<div class="event__offer-selector">
+  <input class="event__offer-checkbox  visually-hidden" id="event-offer-${i}" type="checkbox" name="event-offer-luggage" ${getCheckedOffer(typeOffer, offers) ? 'checked' : ''}>
+    <label class="event__offer-label" for="event-offer-${i}">
+      <span class="event__offer-title">${typeOffer.title}</span>
+      &plus;&euro;&nbsp;
+      <span class="event__offer-price">${typeOffer.price}</span>
+    </label>
+   </div>`).join('')}
+  </div>
+  </section>`;
+  }
 };
 
 const createDestinationInfoTemplate = (destination) => {
@@ -61,13 +76,14 @@ const createDestinationInfoTemplate = (destination) => {
   </section>`;
 };
 
-const createEventEditTemplate = (data, typeOffers) => {
+const createEventEditTemplate = (data, cities, loadedOffers) => {
   const {basePrice,
     dateFrom,
     dateTo,
     destination,
     offers,
-    type} = data;
+    type,
+    typeOffers} = data;
 
   return `<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
@@ -118,11 +134,15 @@ const createEventEditTemplate = (data, typeOffers) => {
         </button>
       </header>
       <section class="event__details">
-         ${typeOffers.offers ? '' : createOffersTemplate(offers, typeOffers.offers)}
+         ${(loadedOffers.offers.length === 0) ? '' : createOffersTemplate(offers, typeOffers.offers, loadedOffers.offers)}
          ${destination.pictures ? createDestinationInfoTemplate(destination) : ''}
       </section>
     </form>
   </li>`;
+};
+
+const getCityList = (destinations) => {
+  return destinations.map((destination) => destination.name);
 };
 
 export default class EventEdit extends SmartView{
@@ -132,14 +152,9 @@ export default class EventEdit extends SmartView{
 
     this._destinations = eventsModel.getDestinations();
     this._offers = eventsModel.getOffers();
-    //console.log(eventsModel.getEvents());
 
-    // проблема началась здесь, когда я стала в шаблон помещать офферы и направления (см getTemplate),
-    // взятые с сервера. Не понимаю, почему с ними перестается отрисовываться список точек, хотя
-    // с обычными точками маршрута(не форма редактирования) офферы и направления вообще не связаны. Точки загружаются, это
-    // можно увидеть в консоли, она выше закоммичена
-
-    this._typeOffers = this._offers.filter((offer) => offer.type === this._data.type);
+    this._typeOffers = this._offers.find((item) => item.type === event.type);
+    this._cities = getCityList(this._destinations);
 
     this._datepickerDateFrom = null;
     this._datepickerDateTo = null;
@@ -152,7 +167,7 @@ export default class EventEdit extends SmartView{
     this._dateFromChangeHandler = this._dateFromChangeHandler.bind(this);
     this._dateToChangeHandler = this._dateToChangeHandler.bind(this);
     this._formDeleteClickHandler = this._formDeleteClickHandler.bind(this);
-    // this._checkedOfferChangeHandler = this._checkedOfferChangeHandler.bind(this);
+    this._checkedOfferChangeHandler = this._checkedOfferChangeHandler.bind(this);
     this._setInnerHandlers();
     this._setDatepicker();
   }
@@ -173,7 +188,7 @@ export default class EventEdit extends SmartView{
   }
 
   getTemplate() {
-    return createEventEditTemplate(this._data, this._typeOffers);
+    return createEventEditTemplate(this._data, this._cities, this._typeOffers);
   }
 
   _formSubmitHandler(evt) {
@@ -198,23 +213,16 @@ export default class EventEdit extends SmartView{
 
     this.updateData({
       type: evt.target.value,
-      typeOffers: {
-        type: this.type,
-        offers: shuffleArray(this._data.typeOffers.offers),
-      },
+      typeOffers: this._offers.find((offer) => offer.type === evt.target.value),
     });
   }
 
   _destinationChangeHandler(evt) {
     evt.preventDefault();
 
-    if (cities.some((city) => city === evt.target.value)) {
+    if (this._cities.some((city) => city === evt.target.value)) {
       this.updateData({
-        destination: {
-          //description: shuffleArray(this._data.destination.description),
-          name: evt.target.value,
-          // pictures: shuffleArray(this._data.destination.pictures),
-        },
+        destination: this._destinations.find((destination) => destination.name === evt.target.value),
       });
     } else {
       evt.target.setCustomValidity('Выберите значение из списка');
@@ -229,22 +237,13 @@ export default class EventEdit extends SmartView{
     });
   }
 
-  // тут будет обработчик для выбора оффера, пока не придумала до конца, какой он должен быть
-  // _checkedOfferChangeHandler(evt) {
-  //   evt.preventDefault();
+  _checkedOfferChangeHandler(evt) {
+    evt.preventDefault();
 
-  //   if (evt.target.tagName !== 'INPUT') {
-  //     return;
-  //   }
-
-  //   if (evt.target.checked) {
-  //     this.updateData({
-  //       offers: {
-  //         offers: this._data.offers.offers.push(evt.target) ???
-  //       },
-  //     });
-  //   }
-  // }
+    if (evt.target.tagName !== 'INPUT') {
+      return;
+    }
+  }
 
   _formDeleteClickHandler(evt) {
     evt.preventDefault();
@@ -308,23 +307,29 @@ export default class EventEdit extends SmartView{
 
   _setInnerHandlers() {
     this.getElement().querySelector('.event__type-group').addEventListener('change', this._typeChangeHandler);
-    this.getElement().querySelector('#event-destination-1').addEventListener('input', this._destinationChangeHandler);
+    (document.querySelector('#event-destination-1') === null ? null :
+      this.getElement().querySelector('#event-destination-1').addEventListener('input', this._destinationChangeHandler));
     this.getElement().querySelector('.event__input--price').addEventListener('input', this._priceInputHandler);
-    // this.getElement().querySelector('.event__available-offers').addEventListener('change', this._checkedOfferChangeHandler);
+    (document.querySelector('.event__available-offers') === null ? null :
+      this.getElement().querySelector('.event__available-offers').addEventListener('change', this._checkedOfferChangeHandler));
+
   }
+
 
   static parseEventToData(event) {
     return Object.assign(
       {},
       event,
-      {},
+      {
+        typeOffers: [],
+      },
     );
   }
 
   static parseDataToEvent(data) {
     data = Object.assign({}, data);
 
-    //delete data.typeOffers;
+    delete data.typeOffers;
 
     return data;
   }

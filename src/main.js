@@ -23,6 +23,7 @@ const filterModel = new FilterModel();
 const siteMainElement = document.querySelector('.page-main');
 const statsContainer = siteMainElement.querySelector('.page-body__container');
 const tripEventsContainerElement = siteMainElement.querySelector('.trip-events');
+const addNewEventButton = document.querySelector('.trip-main__event-add-btn');
 
 //контейнер инфо о поездке
 const siteHeaderElement = document.querySelector('.page-header');
@@ -38,11 +39,13 @@ const handleSiteMenuClick = (menuItem) => {
     case MenuItem.TABLE:
       remove(statsComponent);
       tripPresenter.init();
+      addNewEventButton.disabled = false;
       break;
     case MenuItem.STATS:
       tripPresenter.destroy();
       statsComponent = new StatsView(eventsModel.getEvents());
       render(statsContainer, statsComponent, RenderPosition.BEFOREEND);
+      addNewEventButton.disabled = true;
       break;
   }
 };
@@ -55,6 +58,16 @@ const tripPresenter = new TripPresenter(tripEventsContainerElement, eventsModel,
 const filterPresenter = new FilterPresenter(filtersElement, filterModel, eventsModel);
 
 tripPresenter.init();
+
+api.getDestinations()
+  .then((destinations) => {
+    eventsModel.setDestinations(destinations);
+  });
+
+api.getOffers()
+  .then((offers) => {
+    eventsModel.setOffers(offers);
+  });
 
 api.getEvents()
   .then((events) => {
@@ -71,17 +84,7 @@ api.getEvents()
     filterPresenter.destroy();
   });
 
-api.getDestinations()
-  .then((destinations) => {
-    eventsModel.setDestinations(destinations);
-  });
-
-api.getOffers()
-  .then((offers) => {
-    eventsModel.setOffers(offers);
-  });
-
-document.querySelector('.trip-main__event-add-btn').addEventListener('click', (evt) => {
+addNewEventButton.addEventListener('click', (evt) => {
   evt.preventDefault();
   tripPresenter.createEvent();
 });
