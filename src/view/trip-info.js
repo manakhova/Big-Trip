@@ -11,10 +11,10 @@ const createTripCitiesInfoTemplate = (events) => {
 
 const createTripInfoTemplate = (events) => {
   return `<section class="trip-main__trip-info  trip-info">
-  ${createTripCitiesInfoTemplate(events)}
-  <p class="trip-info__cost">
-    Total: &euro;&nbsp;<span class="trip-info__cost-value">${generateTripCost(events)}</span>
-  </p>
+  ${events.length !== 0 ? createTripCitiesInfoTemplate(events) : ''}
+  ${events.length !== 0 ? `<p class="trip-info__cost">
+  Total: &euro;&nbsp;<span class="trip-info__cost-value">${generateTripCost(events)}</span>
+</p>` : ''}
 </section>`;
 };
 

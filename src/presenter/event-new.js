@@ -4,8 +4,9 @@ import {UserAction, UpdateType} from '../const';
 import {nanoid} from 'nanoid';
 
 export default class EventNew {
-  constructor(eventListContainer, changeData) {
+  constructor(eventListContainer, eventsModel, changeData) {
     this._eventListContainer = eventListContainer;
+    this._eventsModel = eventsModel;
     this._changeData = changeData;
 
     this._eventEditComponent = null;
@@ -20,8 +21,10 @@ export default class EventNew {
     if (this._eventEditComponent !== null) {
       return;
     }
+    this._eventEditComponent = new EventEditView(undefined, this._eventsModel);
 
-    this._eventEditComponent = new EventEditView();
+    const addNewEventButton = document.querySelector('.trip-main__event-add-btn');
+    addNewEventButton.disabled = true;
 
     this._eventEditComponent.setFormSubmitHandler(this._handleFormSubmit);
     this._eventEditComponent.setCloseEditClickHandler(this._handleCloseEditClick);
@@ -41,6 +44,9 @@ export default class EventNew {
     this._eventEditComponent = null;
 
     document.removeEventListener('keydown', this._escKeyDownHandler);
+
+    const addNewEventButton = document.querySelector('.trip-main__event-add-btn');
+    addNewEventButton.disabled = false;
   }
 
   _escKeyDownHandler(evt) {

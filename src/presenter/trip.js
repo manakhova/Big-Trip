@@ -1,6 +1,7 @@
 import SortingView from '../view/sorting';
 import EventListView from '../view/event-list';
 import NoEventView from '../view/no-event';
+import LoadingView from '../view/loading';
 import EventPresenter from './event';
 import EventNewPresenter from './event-new';
 import {filter} from '../utils/filter';
@@ -9,25 +10,28 @@ import {sortEventUp, sortEventByPrice, sortEventByTime} from '../utils/event';
 import {SortType, UpdateType, UserAction, FilterType} from '../const';
 
 export default class Trip {
-  constructor(tripEventsContainer, eventsModel, filterModel) {
+  constructor(tripEventsContainer, eventsModel, filterModel, api) {
     this._eventsModel = eventsModel;
     this._filterModel = filterModel;
 
     this._tripEventsContainer = tripEventsContainer;
     this._eventPresenter = {};
     this._currentSortType = SortType.DEFAULT;
+    this._isLoading = true;
+    this._api = api;
 
     this._sortComponent = null;
 
     this._eventListComponent = new EventListView();
     this._noEventComponent = new NoEventView();
+    this._loadingComponent = new LoadingView();
 
     this._handleViewAction = this._handleViewAction.bind(this);
     this._handleModelEvent = this._handleModelEvent.bind(this);
     this._handleModeChange = this._handleModeChange.bind(this);
     this._handleSortTypeChange = this._handleSortTypeChange.bind(this);
 
-    this._eventNewPresenter = new EventNewPresenter(this._eventListComponent, this._handleViewAction);
+    this._eventNewPresenter = new EventNewPresenter(this._eventListComponent, this._eventsModel, this._handleViewAction);
   }
 
   init() {
@@ -81,7 +85,9 @@ export default class Trip {
   _handleViewAction(actionType, updateType, update) {
     switch (actionType) {
       case UserAction.UPDATE_EVENT:
-        this._eventsModel.updateEvent(updateType, update);
+        this._api.updateEvent(update).then((response) => {
+          this._eventsModel.updateEvent(updateType, response);
+        });
         break;
       case UserAction.ADD_EVENT:
         this._eventsModel.addEvent(updateType, update);
@@ -103,6 +109,11 @@ export default class Trip {
         break;
       case UpdateType.MAJOR:
         this._clearTrip({resetSortType: true});
+        this._renderTrip();
+        break;
+      case UpdateType.INIT:
+        this._isLoading = false;
+        remove(this._loadingComponent);
         this._renderTrip();
         break;
     }
@@ -130,7 +141,7 @@ export default class Trip {
   }
 
   _renderEvent(event) {
-    const eventPresenter = new EventPresenter(this._eventListComponent, this._handleViewAction, this._handleModeChange);
+    const eventPresenter = new EventPresenter(this._eventListComponent, this._eventsModel, this._handleViewAction, this._handleModeChange);
     eventPresenter.init(event);
     this._eventPresenter[event.id] = eventPresenter;
   }
@@ -139,8 +150,12 @@ export default class Trip {
     events.forEach((event) => this._renderEvent(event));
   }
 
+  _renderLoading() {
+    render(this._tripEventsContainer, this._loadingComponent, RenderPosition.AFTERBEGIN);
+  }
+
   _renderNoEvents() {
-    render(this._tripEventsContainer, this._noEventComponent, RenderPosition.AFTERBEGIN);
+    render(this._tripEventsContainer, this._noEventComponent, RenderPosition.BEFOREEND);
   }
 
   _clearTrip({resetSortType = false} = {}) {
@@ -159,12 +174,19 @@ export default class Trip {
   }
 
   _renderTrip() {
+    if (this._isLoading) {
+      this._renderLoading();
+      return;
+    }
+
     const events = this._getEvents();
-    if (this._getEvents().length !== 0) {
+
+    if (events.length !== 0) {
       this._renderSort();
       this._renderEventList(events);
     } else {
       this._renderNoEvents();
+      remove(this._sortComponent);
     }
   }
 }

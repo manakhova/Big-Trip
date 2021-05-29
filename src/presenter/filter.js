@@ -33,6 +33,10 @@ export default class Filter {
     remove(prevFilterComponent);
   }
 
+  destroy() {
+    remove(this._filterComponent);
+  }
+
   _handleModelEvent() {
     this.init();
   }
