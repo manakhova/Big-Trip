@@ -18,6 +18,8 @@ export const generateTripDateTemplate = (events) => {
 
 export const generateTripCost = (events) => {
   const prices = events.map((event) => event.basePrice);
+  const offersPrices = events.map((event) => event.offers.map((offer) => offer.price)).flat();
+
   let x = 0;
-  return `${prices.map((i) => x+=i).reverse()[0]}`;
+  return `${prices.map((i) => x+=i).reverse()[0] + offersPrices.map((i) => x+=i).reverse()[0]}`;
 };
