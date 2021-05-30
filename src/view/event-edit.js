@@ -41,13 +41,13 @@ const checkIsOfferChecked = (offer, typeOffers) => {
   return isChecked;
 };
 
-const createOffersTemplate = (offers, typeOffers, loadedOffers) => {
+const createOffersTemplate = (offers, typeOffers, loadedOffers, isDisabled) => {
   if (typeOffers) {
     return `<section class="event__section  event__section--offers">
   <h3 class="event__section-title  event__section-title--offers">Offers</h3>
   <div class="event__available-offers">
   ${typeOffers.map((typeOffer, i) => `<div class="event__offer-selector">
-  <input class="event__offer-checkbox visually-hidden" data-title="${typeOffer.title}" id="event-offer-${i}" type="checkbox" name="event-offer-luggage" ${checkIsOfferChecked(typeOffer, offers) ? 'checked' : ''}>
+  <input class="event__offer-checkbox visually-hidden" data-title="${typeOffer.title}" id="event-offer-${i}" type="checkbox" name="event-offer-luggage" ${checkIsOfferChecked(typeOffer, offers) ? 'checked' : ''} ${isDisabled ? 'disabled' : ''}>
     <label class="event__offer-label" for="event-offer-${i}">
       <span class="event__offer-title">${typeOffer.title}</span>
       &plus;&euro;&nbsp;
@@ -61,7 +61,7 @@ const createOffersTemplate = (offers, typeOffers, loadedOffers) => {
   <h3 class="event__section-title  event__section-title--offers">Offers</h3>
   <div class="event__available-offers">
   ${loadedOffers.map((typeOffer, i) => `<div class="event__offer-selector">
-  <input class="event__offer-checkbox  visually-hidden" data-title="${typeOffer.title}" id="event-offer-${i}" type="checkbox" name="event-offer-luggage" ${checkIsOfferChecked(typeOffer, offers) ? 'checked' : ''}>
+  <input class="event__offer-checkbox  visually-hidden" data-title="${typeOffer.title}" id="event-offer-${i}" type="checkbox" name="event-offer-luggage" ${checkIsOfferChecked(typeOffer, offers) ? 'checked' : ''} ${isDisabled ? 'disabled' : ''}>
     <label class="event__offer-label" for="event-offer-${i}">
       <span class="event__offer-title">${typeOffer.title}</span>
       &plus;&euro;&nbsp;
@@ -91,7 +91,10 @@ const createEventEditTemplate = (data, cities, loadedOffers) => {
     destination,
     offers,
     type,
-    typeOffers} = data;
+    typeOffers,
+    isDisabled,
+    isSaving,
+    isDeleting} = data;
 
   return `<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
@@ -115,16 +118,16 @@ const createEventEditTemplate = (data, cities, loadedOffers) => {
           <label class="event__label  event__type-output" for="event-destination-1">
             ${getTypeName(type)}
           </label>
-          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name? destination.name : ''}" list="destination-list-1" required>
+          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name? destination.name : ''}" list="destination-list-1" required ${isDisabled ? 'disabled' : ''}>
           ${createDestinationCityTemplate(cities)}
         </div>
 
         <div class="event__field-group  event__field-group--time">
           <label class="visually-hidden" for="event-start-time-1">From</label>
-          <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${formatDate(dateFrom)}">
+          <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${formatDate(dateFrom)}" ${isDisabled ? 'disabled' : ''}>
           &mdash;
           <label class="visually-hidden" for="event-end-time-1">To</label>
-          <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${formatDate(dateTo)}">
+          <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${formatDate(dateTo)}" ${isDisabled ? 'disabled' : ''}>
         </div>
 
         <div class="event__field-group  event__field-group--price">
@@ -132,17 +135,17 @@ const createEventEditTemplate = (data, cities, loadedOffers) => {
             <span class="visually-hidden">Price</span>
             &euro;
           </label>
-          <input class="event__input  event__input--price" id="event-price-1" type="number" min="1" name="event-price" value="${basePrice}" required>
+          <input class="event__input  event__input--price" id="event-price-1" type="number" min="1" name="event-price" value="${basePrice}" required ${isDisabled ? 'disabled' : ''}>
         </div>
 
-        <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-        <button class="event__reset-btn" type="reset">Delete</button>
+        <button class="event__save-btn  btn  btn--blue" type="submit" ${isDisabled ? 'disabled' : ''}>${isSaving ? 'Saving...' : 'Save'}</button>
+        <button class="event__reset-btn" type="reset" ${isDisabled ? 'disabled' : ''}>${isDeleting ? 'Deleting...' : 'Delete'}</button>
         <button class="event__rollup-btn" type="button">
           <span class="visually-hidden">Open event</span>
         </button>
       </header>
       <section class="event__details">
-         ${(loadedOffers.offers.length === 0 || (typeOffers.offers && typeOffers.offers.length === 0)) ? '' : createOffersTemplate(offers, typeOffers.offers, loadedOffers.offers)}
+         ${(loadedOffers.offers.length === 0 || (typeOffers.offers && typeOffers.offers.length === 0)) ? '' : createOffersTemplate(offers, typeOffers.offers, loadedOffers.offers, isDisabled)}
          ${destination.pictures ? createDestinationInfoTemplate(destination) : ''}
       </section>
     </form>
@@ -348,6 +351,9 @@ export default class EventEdit extends SmartView{
       event,
       {
         typeOffers: [],
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
       },
     );
   }
@@ -356,6 +362,9 @@ export default class EventEdit extends SmartView{
     data = Object.assign({}, data);
 
     delete data.typeOffers;
+    delete data.isDisabled;
+    delete data.isSaving;
+    delete data.isDeleting;
 
     return data;
   }

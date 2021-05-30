@@ -1,7 +1,6 @@
 import EventEditView from '../view/event-edit';
 import {render, RenderPosition, remove} from '../utils/render';
 import {UserAction, UpdateType} from '../const';
-import {nanoid} from 'nanoid';
 
 export default class EventNew {
   constructor(eventListContainer, eventsModel, changeData) {
@@ -31,6 +30,8 @@ export default class EventNew {
     this._eventEditComponent.setDeleteClickHandler(this._handleDeleteClick);
 
     render(this._eventListContainer, this._eventEditComponent, RenderPosition.AFTERBEGIN);
+    const cancelButton = this._eventEditComponent.getElement().querySelector('.event__reset-btn');
+    cancelButton.innerHTML = 'Cancel';
 
     document.addEventListener('keydown', this._escKeyDownHandler);
   }
@@ -60,13 +61,31 @@ export default class EventNew {
     this.destroy();
   }
 
+  setSaving() {
+    this._eventEditComponent.updateData({
+      isDisabled: true,
+      isSaving: true,
+    });
+  }
+
+  setAborting() {
+    const resetFormState = () => {
+      this._eventEditComponent.updateData({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    this._eventEditComponent.shake(resetFormState);
+  }
+
   _handleFormSubmit(event) {
     this._changeData(
       UserAction.ADD_EVENT,
       UpdateType.MINOR,
-      Object.assign({id: nanoid()}, event),
+      event,
     );
-    this.destroy();
   }
 
   _handleDeleteClick() {
