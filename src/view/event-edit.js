@@ -1,14 +1,14 @@
 import SmartView from './smart';
 import {getTypeName, formatDate} from '../utils/event';
-import {types, curretnDate} from '../const';
+import {types, CURRENT_DATE} from '../const';
 import flatpickr from 'flatpickr';
 
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 
 const BLANK_EVENT = {
   basePrice: '',
-  dateFrom: curretnDate.toISOString(),
-  dateTo: curretnDate.toISOString(),
+  dateFrom: CURRENT_DATE.toISOString(),
+  dateTo: CURRENT_DATE.toISOString(),
   destination: {},
   id: null,
   isFavorite: false,
@@ -57,7 +57,10 @@ const createOffersTemplate = (offers, typeOffers, loadedOffers, isDisabled) => {
   </div>
   </section>`;
   } else {
-    return `<section class="event__section  event__section--offers">
+    if (loadedOffers.length === 0) {
+      return '';
+    } else {
+      return `<section class="event__section  event__section--offers">
   <h3 class="event__section-title  event__section-title--offers">Offers</h3>
   <div class="event__available-offers">
   ${loadedOffers.map((typeOffer, i) => `<div class="event__offer-selector">
@@ -70,6 +73,7 @@ const createOffersTemplate = (offers, typeOffers, loadedOffers, isDisabled) => {
    </div>`).join('')}
   </div>
   </section>`;
+    }
   }
 };
 
@@ -154,7 +158,7 @@ const createEventEditTemplate = (data, cities, loadedOffers) => {
         </button>
       </header>
       <section class="event__details">
-         ${(loadedOffers.offers.length === 0 || (typeOffers.offers && typeOffers.offers.length === 0)) ? '' : createOffersTemplate(offers, typeOffers.offers, loadedOffers.offers, isDisabled)}
+         ${(typeOffers.offers && typeOffers.offers.length === 0) ? '' : createOffersTemplate(offers, typeOffers.offers, loadedOffers.offers, isDisabled)}
          ${destination.pictures ? createDestinationInfoTemplate(destination) : ''}
       </section>
     </form>
