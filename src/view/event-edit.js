@@ -84,6 +84,15 @@ const createDestinationInfoTemplate = (destination) => {
   </section>`;
 };
 
+const getCloseButton = (data) => {
+  if (data.id) {
+    return 'Delete';
+  } else {
+    return 'Cancel';
+  }
+};
+
+
 const createEventEditTemplate = (data, cities, loadedOffers) => {
   const {basePrice,
     dateFrom,
@@ -139,7 +148,7 @@ const createEventEditTemplate = (data, cities, loadedOffers) => {
         </div>
 
         <button class="event__save-btn  btn  btn--blue" type="submit" ${isDisabled ? 'disabled' : ''}>${isSaving ? 'Saving...' : 'Save'}</button>
-        <button class="event__reset-btn" type="reset" ${isDisabled ? 'disabled' : ''}>${isDeleting ? 'Deleting...' : 'Delete'}</button>
+        <button class="event__reset-btn" type="reset" ${isDisabled ? 'disabled' : ''}>${isDeleting ? 'Deleting...' : getCloseButton(data)}</button>
         <button class="event__rollup-btn" type="button">
           <span class="visually-hidden">Open event</span>
         </button>
