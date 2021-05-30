@@ -30,8 +30,6 @@ export default class EventNew {
     this._eventEditComponent.setDeleteClickHandler(this._handleDeleteClick);
 
     render(this._eventListContainer, this._eventEditComponent, RenderPosition.AFTERBEGIN);
-    const cancelButton = this._eventEditComponent.getElement().querySelector('.event__reset-btn');
-    cancelButton.innerHTML = 'Cancel';
 
     document.addEventListener('keydown', this._escKeyDownHandler);
   }
