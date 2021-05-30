@@ -48,6 +48,6 @@ export const MenuItem = {
   STATS: 'Stats',
 };
 
-export const curretnDate = new Date();
+export const CURRENT_DATE = new Date();
 
 export const BAR_HEIGHT = 55;

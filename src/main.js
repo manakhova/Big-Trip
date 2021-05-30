@@ -50,7 +50,6 @@ const handleSiteMenuClick = (menuItem) => {
   }
 };
 
-
 //фильтры
 const filtersElement = siteHeaderElement.querySelector('.trip-controls__filters');
 

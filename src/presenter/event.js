@@ -67,8 +67,6 @@ export default class Event {
 
     remove(prevEventComponent);
     remove(prevEventEditComponent);
-
-    this._eventsModel.addObserver(this._handleModelEvent);
   }
 
   destroy() {
