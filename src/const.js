@@ -10,14 +10,6 @@ export const types = [
   'sightseeing',
   'restaurant'];
 
-export const cities = [
-  'Moscow',
-  'Toronto',
-  'Berlin',
-  'Paris',
-  'Cologne',
-];
-
 export const SortType = {
   DEFAULT: 'default',
   PRICE: 'price',

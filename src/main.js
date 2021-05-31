@@ -9,7 +9,7 @@ import FilterModel from './model/filter.js';
 import {MenuItem, UpdateType} from './const.js';
 import Api from './api.js';
 
-const AUTHORIZATION = 'Basic dkjwrbhiwgib77932bfiqr';
+const AUTHORIZATION = 'Basic fhskegfaweouwouewoe';
 const END_POINT = 'https://14.ecmascript.pages.academy/big-trip';
 
 const api = new Api(END_POINT, AUTHORIZATION);

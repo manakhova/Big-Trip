@@ -96,7 +96,6 @@ const getCloseButton = (data) => {
   }
 };
 
-
 const createEventEditTemplate = (data, cities, loadedOffers) => {
   const {basePrice,
     dateFrom,
@@ -165,9 +164,6 @@ const createEventEditTemplate = (data, cities, loadedOffers) => {
   </li>`;
 };
 
-const getCityList = (destinations) => {
-  return destinations.map((destination) => destination.name);
-};
 
 export default class EventEdit extends SmartView{
   constructor(event = BLANK_EVENT, eventsModel) {
@@ -178,7 +174,7 @@ export default class EventEdit extends SmartView{
     this._offers = eventsModel.getOffers();
 
     this._typeOffers = this._offers.find((item) => item.type === event.type);
-    this._cities = getCityList(this._destinations);
+    this._cities = this._destinations.map((destination) => destination.name);
 
     this._datepickerDateFrom = null;
     this._datepickerDateTo = null;
